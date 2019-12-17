@@ -11,12 +11,6 @@ Vec3::Vec3(float _X, float _Y, float _Z) : x(_X), y(_Y), z(_Z) {}
 Vec3::Vec3(double _X, double _Y, double _Z)
     : x((float)_X), y((float)_Y), z((float)_Z) {}
 //	Initated Constructor
-Vec3::Vec3(uint16_t _X, uint16_t _Y, uint16_t _Z)
-    : x((float)_X), y((float)_Y), z((float)_Z) {}
-//	Initated Constructor
-Vec3::Vec3(uint16_t _X, uint16_t _Y, float _Z)
-    : x((float)_X), y((float)_Y), z(_Z) {}
-//	Initated Constructor
 Vec3::Vec3(int _X, int _Y, int _Z) : x((float)_X), y((float)_Y), z((float)_Z) {}
 //	Copy Constructor
 Vec3::Vec3(const Vec3 &_vector) {
@@ -29,15 +23,15 @@ Vec3::Vec3(const Vec3 &_vector) {
 
 //		Operators
 //	Addition Operator
-Vec3 Vec3::operator+(Vec3 _vector) {
+Vec3 Vec3::operator+(Vec3 _vector) const {
   return Vec3((x + _vector.x), (y + _vector.y), (z + _vector.z));
 }
 //	Substraction Operator
-Vec3 Vec3::operator-(Vec3 _vector) {
+Vec3 Vec3::operator-(Vec3 _vector) const {
   return Vec3((x - _vector.x), (y - _vector.y), (z - _vector.z));
 }
 //	Cross Product of Two Vectors
-Vec3 Vec3::operator*(Vec3 _vector) {
+Vec3 Vec3::operator*(Vec3 _vector) const {
   Vec3 _vCross; // The vector to hold the cross product
   _vCross.x = ((y * _vector.z) - (z * _vector.y)); // Get the X value
   _vCross.y = ((z * _vector.x) - (x * _vector.z)); // Get the Y value
@@ -47,16 +41,16 @@ Vec3 Vec3::operator*(Vec3 _vector) {
 }
 
 //	Scalar Multiplication
-Vec3 Vec3::operator*(float _num) {
+Vec3 Vec3::operator*(float _num) const {
   return Vec3((x * _num), (y * _num), (z * _num));
 }
 //	Scalar Division
-Vec3 Vec3::operator/(float _num) {
+Vec3 Vec3::operator/(float _num) const {
   return Vec3((x / _num), (y / _num), (z / _num));
 }
 
 //	Returns the Maginitude of two vectors divided
-float Vec3::operator/(Vec3 _vector) {
+float Vec3::operator/(Vec3 _vector) const {
   return ((Magnitude()) / (_vector.Magnitude()));
 }
 //	Check Magnitude

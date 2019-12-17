@@ -12,18 +12,16 @@ public:
   Vec3();
   Vec3(float _X, float _Y, float _Z);
   Vec3(double _X, double _Y, double _Z);
-  Vec3(uint16_t _X, uint16_t _Y, uint16_t _Z);
-  Vec3(uint16_t _X, uint16_t _Y, float _Z);
   Vec3(int _X, int _Y, int _Z);
   Vec3(const Vec3 &_vector);
 
   //	Operators
-  Vec3 operator+(Vec3 _vector);
-  Vec3 operator-(Vec3 _vector);
-  Vec3 operator*(Vec3 _vector);
-  Vec3 operator*(float _num);
-  Vec3 operator/(float _num);
-  float operator/(Vec3 _vector);
+  Vec3 operator+(Vec3 _vector) const; 
+  Vec3 operator-(Vec3 _vector) const;
+  Vec3 operator*(Vec3 _vector) const;
+  Vec3 operator*(float _num) const;
+  Vec3 operator/(float _num) const;
+  float operator/(Vec3 _vector) const;
 
   //	Self Operators
   void operator+=(Vec3 _vector);

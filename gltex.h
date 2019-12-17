@@ -9,7 +9,7 @@ struct ImageData {
   int imgType = -1;
   GLuint glTex = -1;
   const char *name = nullptr;
-  unsigned char *imgData = nullptr;
+  char *imgData = nullptr;
 
   ImageData() {}
   ImageData(const char *friendlyName);
