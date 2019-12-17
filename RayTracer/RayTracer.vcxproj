@@ -134,6 +134,7 @@
     <ClCompile Include="..\filesys.cpp" />
     <ClCompile Include="..\glfont.cpp" />
     <ClCompile Include="..\glprog.cpp" />
+    <ClCompile Include="..\glrender.cpp" />
     <ClCompile Include="..\gltex.cpp" />
     <ClCompile Include="..\imgui_impl_sdl_gl3.cpp" />
     <ClCompile Include="..\libs\gl3w\GL\gl3w.c" />
@@ -145,11 +146,11 @@
     <ClCompile Include="..\math\CQuaternion.cpp" />
     <ClCompile Include="..\math\Cvector2.cpp" />
     <ClCompile Include="..\math\CVector3.cpp" />
-    <ClCompile Include="..\net.cpp" />
     <ClCompile Include="..\program.cpp" />
-    <ClCompile Include="..\text_help.cpp" />
+    <ClCompile Include="..\raycast.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\core.h" />
     <ClInclude Include="..\filesys.h" />
     <ClInclude Include="..\glfont.h" />
     <ClInclude Include="..\glprog.h" />
@@ -164,9 +165,7 @@
     <ClInclude Include="..\math\CQuaternion.h" />
     <ClInclude Include="..\math\Cvector2.h" />
     <ClInclude Include="..\math\CVector3.h" />
-    <ClInclude Include="..\net.h" />
     <ClInclude Include="..\program.h" />
-    <ClInclude Include="..\text_help.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

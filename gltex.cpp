@@ -26,6 +26,16 @@ void ImageData::LoadFromFile(const char* filename)
 	}
 }
 
+void ImageData::BlankImage(int _width, int _height)
+{
+	width = _width;
+	height = _height;
+	imgType = GL_RGB;
+
+	loaded = true;
+	imgData = (unsigned char *)stbi__malloc(width*height * 3);
+}
+
 bool ImageData::CopyToGPU()
 {
 	if (!loaded)
@@ -67,5 +77,7 @@ void ImageData::FreeImage()
 
 void ImageData::BindTex()
 {
+	if (false == IsBindable()) return;
+
 	glBindTexture(GL_TEXTURE_2D, glTex);
 }

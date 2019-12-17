@@ -63,16 +63,16 @@
     <ClCompile Include="..\glprog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\net.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\text_help.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\glfont.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\filesys.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\glrender.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\raycast.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -107,17 +107,11 @@
     <ClInclude Include="..\libs\zed_net.h">
       <Filter>Libs</Filter>
     </ClInclude>
-    <ClInclude Include="..\net.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\libs\atomic\atomicops.h">
       <Filter>Libs\atomic</Filter>
     </ClInclude>
     <ClInclude Include="..\libs\atomic\readerwriterqueue.h">
       <Filter>Libs\atomic</Filter>
-    </ClInclude>
-    <ClInclude Include="..\text_help.h">
-      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\glfont.h">
       <Filter>Source Files</Filter>
@@ -126,6 +120,9 @@
       <Filter>Libs</Filter>
     </ClInclude>
     <ClInclude Include="..\filesys.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\core.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
