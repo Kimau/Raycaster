@@ -3,10 +3,6 @@
 #include <cstdint>
 #include "CVector3.h"
 
-//#########################################################################
-//	3D Yar Class
-//	Float base, note floating point errors
-//#########################################################################
 class Ray
 {
 public:

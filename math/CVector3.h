@@ -11,10 +11,8 @@
 class Vec3
 {
 public:
-	//-------------------------------------------
-	//	Constructors
-	//-------------------------------------------
-	Vec3();
+		//	Constructors
+		Vec3();
 	Vec3(float _X, float _Y, float _Z);
 	Vec3(double _X, double _Y, double _Z);
 	Vec3(uint16_t _X, uint16_t _Y, uint16_t _Z);
@@ -22,47 +20,37 @@ public:
 	Vec3(int _X, int _Y, int _Z);
 	Vec3(const Vec3& _vector);
 
-	//-------------------------------------------
-	//	Operators
-	//-------------------------------------------
-	Vec3 operator+(Vec3 _vector);
+		//	Operators
+		Vec3 operator+(Vec3 _vector);
 	Vec3 operator-(Vec3 _vector);	
 	Vec3 operator*(Vec3 _vector);
 	Vec3 operator*(float _num);
 	Vec3 operator/(float _num);
 	float operator/(Vec3 _vector);
 
-	//-------------------------------------------
-	//	Self Operators
-	//-------------------------------------------
-	void operator+=(Vec3 _vector);
+		//	Self Operators
+		void operator+=(Vec3 _vector);
 	void operator-=(Vec3 _vector);	
 	void operator*=(Vec3 _vector);
 	void operator*=(float _num);
 	void operator/=(float _num);
 	void operator/=(Vec3 _vector);
 
-	//-------------------------------------------
-	//	Comparison Operators
-	//-------------------------------------------
-	bool operator==(float _mag) const;
+		//	Comparison Operators
+		bool operator==(float _mag) const;
 	bool operator==(Vec3 _vector) const;
 	bool operator!=(Vec3 _vector) const;
 
-	//-------------------------------------------
-	//	Functions
-	//-------------------------------------------
-	void RotateX(float _degree);
+		//	Functions
+		void RotateX(float _degree);
 	void RotateY(float _degree);
 	void RotateZ(float _degree);
 	void Rotate(float _degree, Vec3 _axis);
 	void Normalize();
 	void Invert();
 
-	//-------------------------------------------
-	//	Accesors
-	//-------------------------------------------
-	Vec3 getNormalized() const;
+		//	Accesors
+		Vec3 getNormalized() const;
 	Vec3 getLongitude() const;
 	Vec3 getLatitude() const;
 	float Magnitude() const;

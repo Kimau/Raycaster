@@ -68,29 +68,21 @@ Vec3 CPlane::getIntersectPoint(Vec3 _start, Vec3 _dir) const
 {
 	_dir.Normalize();
 
-	//----------------------------
-	// Place both in same frame
-	//----------------------------
-	float _numer = m_point.Magnitude() +
+		// Place both in same frame
+		float _numer = m_point.Magnitude() +
 		m_normal.x + _start.x +
 		m_normal.y + _start.y +
 		m_normal.z + _start.z;
 
-	//----------------------------
-	//	Get Angle
-	//----------------------------
-	float _denom = m_normal.Dot(_dir);
+		//	Get Angle
+		float _denom = m_normal.Dot(_dir);
 
-	//------------------------
-	//	Line is axis of plane
-	//------------------------
-	if(_denom == 0.0f)
+		//	Line is axis of plane
+		if(_denom == 0.0f)
 		return m_point;
 
-	//---------------------------
-	//	Get Distance to intersect
-	//---------------------------
-	float _dist = _numer / _denom;
+		//	Get Distance to intersect
+		float _dist = _numer / _denom;
 
 	return (_start + (_dir * _dist));
 }

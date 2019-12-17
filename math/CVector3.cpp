@@ -8,39 +8,25 @@
 //		Constructors
 //####################################################################################################
 //####################################################################################################
-//--------------------------------------------------------------------
 //	Default Constructor
-//--------------------------------------------------------------------
 Vec3::Vec3() : x(0), y(0), z(0)
 {}
-//--------------------------------------------------------------------
 //	Initated Constructor
-//--------------------------------------------------------------------
 Vec3::Vec3(float _X, float _Y, float _Z) : x(_X), y(_Y), z(_Z)
 {}
-//--------------------------------------------------------------------
 //	Initated Constructor
-//--------------------------------------------------------------------
 Vec3::Vec3(double _X, double _Y, double _Z) : x((float)_X), y((float)_Y), z((float)_Z)
 {}
-//--------------------------------------------------------------------
 //	Initated Constructor
-//--------------------------------------------------------------------
 Vec3::Vec3(uint16_t _X, uint16_t _Y, uint16_t _Z) : x((float)_X), y((float)_Y), z((float)_Z)
 {}
-//--------------------------------------------------------------------
 //	Initated Constructor
-//--------------------------------------------------------------------
 Vec3::Vec3(uint16_t _X, uint16_t _Y, float _Z) : x((float)_X), y((float)_Y), z(_Z)
 {}
-//--------------------------------------------------------------------
 //	Initated Constructor
-//--------------------------------------------------------------------
 Vec3::Vec3(int _X, int _Y, int _Z) : x((float)_X), y((float)_Y), z((float)_Z)
 {}
-//--------------------------------------------------------------------
 //	Copy Constructor
-//--------------------------------------------------------------------
 Vec3::Vec3(const Vec3& _vector)
 {
 	if(this != &_vector)
@@ -56,9 +42,7 @@ Vec3::Vec3(const Vec3& _vector)
 //		Operators
 //####################################################################################################
 //####################################################################################################
-//--------------------------------------------------------------------
 //	Addition Operator
-//--------------------------------------------------------------------
 Vec3 Vec3::operator+(Vec3 _vector)
 {
 	return Vec3(
@@ -66,9 +50,7 @@ Vec3 Vec3::operator+(Vec3 _vector)
 		(y+_vector.y),
 		(z+_vector.z));
 }
-//--------------------------------------------------------------------
 //	Substraction Operator
-//--------------------------------------------------------------------
 Vec3 Vec3::operator-(Vec3 _vector)
 {
 	return Vec3(
@@ -76,9 +58,7 @@ Vec3 Vec3::operator-(Vec3 _vector)
 		(y-_vector.y),
 		(z-_vector.z));
 }
-//--------------------------------------------------------------------
 //	Cross Product of Two Vectors
-//--------------------------------------------------------------------
 Vec3 Vec3::operator*(Vec3 _vector)
 {
 	Vec3 _vCross;									// The vector to hold the cross product
@@ -89,9 +69,7 @@ Vec3 Vec3::operator*(Vec3 _vector)
 	return _vCross;										// Return the cross product
 }
 
-//--------------------------------------------------------------------
 //	Scalar Multiplication
-//--------------------------------------------------------------------
 Vec3 Vec3::operator*(float _num)
 {
 	return Vec3(
@@ -99,9 +77,7 @@ Vec3 Vec3::operator*(float _num)
 		(y*_num),
 		(z*_num));
 }
-//--------------------------------------------------------------------
 //	Scalar Division
-//--------------------------------------------------------------------
 Vec3 Vec3::operator/(float _num)
 {
 	return Vec3(
@@ -110,60 +86,46 @@ Vec3 Vec3::operator/(float _num)
 		(z/_num));
 }
 
-//--------------------------------------------------------------------
 //	Returns the Maginitude of two vectors divided
-//--------------------------------------------------------------------
 float Vec3::operator/(Vec3 _vector)
 {
 	return ((Magnitude()) / (_vector.Magnitude()));
 }
-//--------------------------------------------------------------------
 //	Check Magnitude
 //	Due to the nature of floats it checks within a 5% tolerance
-//--------------------------------------------------------------------
 bool Vec3::operator==(float _mag) const
 {
 	float _result = Magnitude() / _mag;	
 	return ((_result < 1.05f) || (_result > 0.95f));
 }
-//--------------------------------------------------------------------
 //	Equal Comparison for Vectors
 //	Due to the nature of floats it checks within a 5% tolerance
-//--------------------------------------------------------------------
 bool Vec3::operator==(Vec3 _vector) const
 {
 	float _result = ((x/_vector.x) + (y/_vector.y) + (z/_vector.z)) / 3.0f;
 	return ((_result < 1.05f) || (_result > 0.95f));
 }
-//--------------------------------------------------------------------
 //	Checks for inquality
 //	Uses equality operator
-//--------------------------------------------------------------------
 bool Vec3::operator!=(Vec3 _vector) const
 {
 	return !((*this) == _vector);
 }
-//--------------------------------------------------------------------
 //	Addition Operator
-//--------------------------------------------------------------------
 void Vec3::operator+=(Vec3 _vector)
 {
 	x += _vector.x;
 	y += _vector.y;
 	z += _vector.z;
 }
-//--------------------------------------------------------------------
 //	Substraction Operator
-//--------------------------------------------------------------------
 void Vec3::operator-=(Vec3 _vector)
 {
 	x -= _vector.x;
 	y -= _vector.y;
 	z -= _vector.z;
 }
-//--------------------------------------------------------------------
 //	Cross Product of Two Vectors
-//--------------------------------------------------------------------
 void Vec3::operator*=(Vec3 _vector)
 {
 	x = ((y * _vector.z) - (z * _vector.y));	// Get the X value
@@ -171,18 +133,14 @@ void Vec3::operator*=(Vec3 _vector)
 	z = ((x * _vector.y) - (y * _vector.x));	// Get the Z value
 }
 
-//--------------------------------------------------------------------
 //	Scalar Multiplication
-//--------------------------------------------------------------------
 void Vec3::operator*=(float _num)
 {
 	x *= _num;
 	y *= _num;
 	z *= _num;
 }
-//--------------------------------------------------------------------
 //	Scalar Division
-//--------------------------------------------------------------------
 void Vec3::operator/=(float _num)
 {
 	x /= _num;
@@ -190,9 +148,7 @@ void Vec3::operator/=(float _num)
 	z /= _num;
 }
 
-//--------------------------------------------------------------------
 //	Returns the Maginitude of two vectors divided
-//--------------------------------------------------------------------
 void Vec3::operator/=(Vec3 _vector)
 {
 	float _mag = _vector.Magnitude();
@@ -206,9 +162,7 @@ void Vec3::operator/=(Vec3 _vector)
 //		Functions
 //####################################################################################################
 //####################################################################################################
-//--------------------------------------------------------------------
 //	Rotate Around the X axis
-//--------------------------------------------------------------------
 void Vec3::RotateX(float _degree)
 {
 	float _rad = _degree * DEG_TO_RAD;
@@ -221,9 +175,7 @@ void Vec3::RotateX(float _degree)
 	y = _nY;
 	z = _nZ;
 }
-//--------------------------------------------------------------------
 //	Rotate Around the Y axis
-//--------------------------------------------------------------------
 void Vec3::RotateY(float _degree)
 {
 	float _rad = _degree * DEG_TO_RAD;
@@ -236,9 +188,7 @@ void Vec3::RotateY(float _degree)
 	x = _nX;
 	z = _nZ;
 }
-//--------------------------------------------------------------------
 //	Rotate Around the Z axis
-//--------------------------------------------------------------------
 void Vec3::RotateZ(float _degree)
 {
 	float _rad = _degree * DEG_TO_RAD;
@@ -251,15 +201,11 @@ void Vec3::RotateZ(float _degree)
 	x = _nX;
 	y = _nY;
 }
-//--------------------------------------------------------------------
 //	Rotate Around the given axis
-//--------------------------------------------------------------------
 void Vec3::Rotate(float _degree, Vec3 _axis)
 {
-	//------------------------------------
-	//	Get Vars
-	//------------------------------------
-	float _rad = _degree * DEG_TO_RAD;
+		//	Get Vars
+		float _rad = _degree * DEG_TO_RAD;
 	float _cosAng = cosf(_rad);
 	float _sinAng = sinf(_rad);
 	
@@ -267,16 +213,12 @@ void Vec3::Rotate(float _degree, Vec3 _axis)
 	Vec3 _Cross = Vec3(x,y,z) * _axis;
 	_axis = _axis * Dot(_axis);
 
-	//------------------------------------
-	//	Rotate
-	//------------------------------------
-	x = _axis.x + (x - _axis.x) * _cosAng + _Cross.x * _sinAng;
+		//	Rotate
+		x = _axis.x + (x - _axis.x) * _cosAng + _Cross.x * _sinAng;
 	y = _axis.y + (y - _axis.y) * _cosAng + _Cross.y * _sinAng;
 	z = _axis.z + (z - _axis.z) * _cosAng + _Cross.z * _sinAng;
 }
-//--------------------------------------------------------------------
 //	Normalizes the vector
-//--------------------------------------------------------------------
 void Vec3::Normalize()
 {
 	// Get the magnitude
@@ -294,9 +236,7 @@ void Vec3::Normalize()
 		z /= _Magnitude;
 	}
 }
-//--------------------------------------------------------------------
 //	Inverts all the values of the Vector
-//--------------------------------------------------------------------
 void Vec3::Invert()
 {
 	x = -x;
@@ -309,9 +249,7 @@ void Vec3::Invert()
 //		Accessors
 //####################################################################################################
 //####################################################################################################
-//--------------------------------------------------------------------
 //	Returns Normalized form of the Vector
-//--------------------------------------------------------------------
 Vec3 Vec3::getNormalized() const
 {
 	// Get the magnitude
@@ -331,52 +269,40 @@ Vec3 Vec3::getNormalized() const
 		return _normalized;
 	}
 }
-//--------------------------------------------------------------------
 //	Returns the Longitude of given point assuming (this) is a point
 //	on a sphere. Longitude is given in form of a UNIT vector going
 //	NORTH - SOUTH : North is positive
-//--------------------------------------------------------------------
 Vec3 Vec3::getLongitude() const
 {
 	Vec3 _long(-(z*x),-(z*y),(x*x) + (y*y));
 	_long.Normalize();
 	return _long;
 }
-//--------------------------------------------------------------------
 //	Returns the Latitude of given point assuming (this) is a point
 //	on a sphere. Latitude is given in form of a UNIT vector going
 //	EAST - WEST : East is positive
-//--------------------------------------------------------------------
 Vec3 Vec3::getLatitude() const
 {
 	Vec3 _lat(-y,x,0.0f);
 	_lat.Normalize();
 	return _lat;
 }
-//--------------------------------------------------------------------
 //	Returns the maginitude of the vector
-//--------------------------------------------------------------------
 float Vec3::Magnitude() const
 {
 	return (sqrtf(x*x + y*y + z*z));
 }
-//--------------------------------------------------------------------
 //	Returns the Squared Magnitude of a Vector
-//--------------------------------------------------------------------
 float Vec3::SqrdMag() const
 {
 	return x*x + y*y + z*z;
 }
-//--------------------------------------------------------------------
 //	Gets the Dot product of the Vectors
-//--------------------------------------------------------------------
 float Vec3::Dot(Vec3 _vector) const
 {
 	return ((x * _vector.x) + (y * _vector.y) + (z * _vector.z));
 }
-//--------------------------------------------------------------------
 //	Gets the angle between
-//--------------------------------------------------------------------
 float Vec3::Angle(Vec3 _vector) const
 {
 	// Get the arc cosine of the (dotProduct / vectorsMagnitude) which is the angle in RADIANS.
@@ -397,9 +323,7 @@ float Vec3::Angle(Vec3 _vector) const
 	// Return the angle in radians
 	return(_angle);
 }
-//--------------------------------------------------------------------
 //	Gets the distance to the closest point on the line
-//--------------------------------------------------------------------
 float Vec3::Distance(Vec3 _point, Vec3 _orig) const
 {
 	_point -= _orig;
@@ -407,20 +331,16 @@ float Vec3::Distance(Vec3 _point, Vec3 _orig) const
 	_top /= Magnitude();
 	return _top.Magnitude();
 }
-//--------------------------------------------------------------------
 //	Gets the distance to the closest point on the line
 //	ASSUMES (this) is from Origin and length 1
-//--------------------------------------------------------------------
 float Vec3::DistanceFast(Vec3 _point) const
 {
 	Vec3 _top = (_point * (*this));
 	return _top.Magnitude();
 }
 
-//--------------------------------------------------------------------
 //	Returns an array for use
 //	ASSUMES ARRAY IS OF LENGTH 3 OR GREATER
-//--------------------------------------------------------------------
 void Vec3::getArray(float* _array) const
 {
 	_array[0] = x;

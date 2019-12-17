@@ -115,16 +115,12 @@ void Quat::Normalize()
 //==========================================================================
 void Quat::CreateMatrix(float* _matrix = 0)
 {
-	//------------------------
-	//	Allocate Memory
-	//------------------------
-	if(!_matrix)
+		//	Allocate Memory
+		if(!_matrix)
 		_matrix = new float[16];
 
-	//------------------------
-	//	Calculate
-	//------------------------
-	_matrix[0]  = 1.0f - 2.0f * (y * y + z * z); 
+		//	Calculate
+		_matrix[0]  = 1.0f - 2.0f * (y * y + z * z); 
 	_matrix[1]  =		 2.0f * (x * y + z * w);
 	_matrix[2]  =		 2.0f * (x * z - y * w);
 	_matrix[3]  = 0.0f;  
