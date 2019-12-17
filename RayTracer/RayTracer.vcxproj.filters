@@ -1,0 +1,132 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Libs">
+      <UniqueIdentifier>{f41bad53-2183-4997-9e0b-7b8bd2363eb9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{bc40c48b-251b-4aea-a878-17f0c11ca7a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Libs\atomic">
+      <UniqueIdentifier>{9e98a2dd-5ba6-494e-8d30-fdceedc99b77}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\imgui_impl_sdl_gl3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\gl3w\GL\gl3w.c">
+      <Filter>Libs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\imgui\imgui.cpp">
+      <Filter>Libs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\imgui\imgui_demo.cpp">
+      <Filter>Libs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\imgui\imgui_draw.cpp">
+      <Filter>Libs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\program.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\Cvector2.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\CVector3.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\CPlane.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\math\CQuaternion.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gltex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\glprog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\net.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\text_help.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\glfont.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\filesys.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\imgui_impl_sdl_gl3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\program.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\CVector3.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\Cvector2.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\CPlane.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\CQuaternion.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\stb\stb_image.h">
+      <Filter>Libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gltex.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\glprog.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\zed_net.h">
+      <Filter>Libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\net.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\atomic\atomicops.h">
+      <Filter>Libs\atomic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\atomic\readerwriterqueue.h">
+      <Filter>Libs\atomic</Filter>
+    </ClInclude>
+    <ClInclude Include="..\text_help.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\glfont.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libs\stb\stb_truetype.h">
+      <Filter>Libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\filesys.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
