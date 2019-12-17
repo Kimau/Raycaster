@@ -3,6 +3,16 @@
 #include "math/CRay.h"
 #include "program.h"
 
+Vec3 color(const Ray& r) {
+	Vec3 unit_direction = r.dir().getNormalized();
+	float t = 0.5f*(unit_direction.y + 1.0f);
+
+	const Vec3 ground(1.0f, 1.0f, 1.0f);
+	const Vec3 sky(0.5f, 0.7f, 1.0f);
+	
+	return lerp(sky, ground, t);
+}
+
 void Raycast(ImageData &output) {
 
   float invWidth = 1.0f / float(output.width);
@@ -21,9 +31,11 @@ void Raycast(ImageData &output) {
       float u = x * invWidth;
 	  Ray ray(cam.origin(), cam.dir() + topleft + hor*u + ver*v);
 
-      output.imgData[c++] = char(255 * u);
-      output.imgData[c++] = char(255 * v);
-      output.imgData[c++] = char(255 * 0.2f);
+	  Vec3 col = color(ray);
+
+      output.imgData[c++] = char(255 * col.x);
+      output.imgData[c++] = char(255 * col.y);
+      output.imgData[c++] = char(255 * col.z);
     }
   }
 }

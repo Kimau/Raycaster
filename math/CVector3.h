@@ -61,3 +61,5 @@ public:
 
 typedef Vec3 CVert;
 typedef Vec3 CNorm;
+
+inline Vec3 lerp(const Vec3& a, const Vec3& b, float t) { return a*(1.0f-t)+b*t; }
