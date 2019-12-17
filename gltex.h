@@ -1,15 +1,18 @@
 #pragma once
 
+#include "types.h"
 #include <GL/gl3w.h>
 
 struct ImageData {
-  bool loaded = false;
+	const char *name = nullptr;
+	u8 *imgData = nullptr;
+
+  int imgType = -1;
   int width = -1;
   int height = -1;
-  int imgType = -1;
   GLuint glTex = -1;
-  const char *name = nullptr;
-  char *imgData = nullptr;
+
+  bool loaded = false;
 
   ImageData() {}
   ImageData(const char *friendlyName);

@@ -29,7 +29,7 @@ void glFont::Init(const char *filename) {
   bakedFont.height = 512;
   bakedFont.width = 512;
   bakedFont.imgType = GL_ALPHA;
-  bakedFont.imgData = new unsigned char[bakedFont.height * bakedFont.width];
+  bakedFont.imgData = new u8[bakedFont.height * bakedFont.width];
 
   // Read File into Buffer
   auto ttf_buffer = ReadFileToBuffer(filename);

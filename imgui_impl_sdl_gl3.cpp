@@ -13,6 +13,7 @@
 
 #include "imgui.h"
 #include "imgui_impl_sdl_gl3.h"
+#include "types.h"
 
 // SDL,GL3W
 #include "libs/sdl/include/SDL.h"
@@ -223,7 +224,7 @@ bool ImGui_ImplSdlGL3_ProcessEvent(SDL_Event *event) {
 void ImGui_Impl_CreateFontsTexture() {
   // Build texture atlas
   ImGuiIO &io = ImGui::GetIO();
-  unsigned char *pixels;
+  u8* pixels;
   int width, height;
   io.Fonts->GetTexDataAsRGBA32(
       &pixels, &width, &height); // Load as RGBA 32-bits for OpenGL3 demo

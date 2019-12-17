@@ -12,7 +12,7 @@ ImageData::ImageData(const char *friendlyName)
 
 void ImageData::LoadFromFile(const char *filename) {
   int depth;
-  unsigned char *data = stbi_load(filename, &width, &height, &depth, 0);
+  u8 *data = stbi_load(filename, &width, &height, &depth, 0);
 
   if (data) {
     loaded = true;
@@ -31,7 +31,7 @@ void ImageData::BlankImage(int _width, int _height) {
   imgType = GL_RGB;
 
   loaded = true;
-  imgData = (unsigned char *)stbi__malloc(width * height * 3);
+  imgData = (u8*)stbi__malloc(width * height * 3);
 }
 
 bool ImageData::CopyToGPU() {
