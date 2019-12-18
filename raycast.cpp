@@ -18,19 +18,23 @@ vec3 color(const ray& r) {
 	const vec3 ground(1.0f, 1.0f, 1.0f);
 	const vec3 sky(0.5f, 0.7f, 1.0f);
 
-	vec3 col = lerp(ground, sky, -unit_direction.y);
-	if (unit_direction.y > 0.0f) {
-		vec4 floor(0.0f, 1.0f, 0.0f, 0.0f);
+	if (hit_sphere(vec4(0.0f, 0.0f, -4.0f, 0.5f), r))
+		return vec3(1.0f, 0.0f, 0.0f);
 
-		vec3 fpt = intersectPlane(floor, r);
+	// Hit Ground
+	vec4 floor(0.0f, 1.0f, 0.0f, 0.0f);
+	float d = intersectPlane(floor, r);
+	if (d > 0.0f) {		
+		vec3 fpt = r.a + r.b.getNormalized()*d;
 
 		if ((sinf(fpt.x*PI*1.0f) > 0) != (sinf(fpt.z*PI*1.0f) > 0))
-			col = vec3(0.6f, 0.6f, 0.6f);
+			return vec3(0.6f, 0.6f, 0.6f);
 		else
-			col = vec3(0.8f, 0.8f, 0.8f);
+			return vec3(0.8f, 0.8f, 0.8f);
 	}
 
-	return col;
+	// Hit Sky
+	return lerp(ground, sky, -unit_direction.y);
 }
 
 void Raycast(ImageData &output) {
@@ -39,14 +43,10 @@ void Raycast(ImageData &output) {
   float invHeight = 1.0f / float(output.height);
   float ratio = float(output.width) / float(output.height);
 
-  ray cam(vec3(), vec3(0.0f, 0.0f, -1.0f));
+  ray cam(g_campos, g_camdir.getNormalized());
   vec3 topleft(-ratio, -1.0f, -1.0f);
   vec3 hor(ratio * 2.0f, 0.0f, 0.0f);
   vec3 ver(0.0f, 2.0f, 0.0f);
-
-  cam.b.RotateX(g_camdir.x);
-  cam.b.RotateY(g_camdir.y);
-  cam.b.RotateZ(g_camdir.z);
 
   int c = 0;
   for (int y = output.height - 1; y >= 0; --y) {

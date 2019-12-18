@@ -21,4 +21,5 @@ extern bool g_request_brute_ray;
 extern ImVec4 g_clearColour;
 extern vec2 g_lastclick;
 extern vec3 g_camdir;
+extern vec3 g_campos;
 extern float g_drawtest[4][4];

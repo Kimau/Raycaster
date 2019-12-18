@@ -5,7 +5,8 @@ bool g_always_cast = false;
 bool g_request_brute_ray = false;
 ImVec4 g_clearColour = ImColor(114, 144, 154);
 vec2 g_lastclick = vec2(SCREEN_WIDTH * 0.5f, SCREEN_HEIGHT * 0.5f);
-vec3 g_camdir = vec3(0.0f,0.0f,0.0f);
+vec3 g_camdir = vec3(0.0f, 0.0f, -1.0f);
+vec3 g_campos = vec3(0.0f, 0.0f, 0.0f);
 
 float g_drawtest[4][4] = {{2.0f / SCREEN_WIDTH, 0, 0, 0},
                           {0.0f, 2.0f / SCREEN_HEIGHT, 0, 0},
@@ -56,6 +57,7 @@ void update() {
                 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
 	ImGui::DragFloat3("camdir", &g_camdir.x, 0.1f);
+	ImGui::DragFloat3("campos", &g_campos.x, 0.1f);
 
     if (ImGui::BeginMenu("Test Matrix")) {
       if (ImGui::Button("Reset")) {

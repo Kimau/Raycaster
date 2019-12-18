@@ -22,15 +22,15 @@ inline vec4 createPlaneFromPoints(const vec3& a, const vec3& b, const vec3& c) {
 inline vec4 createPlaneFromPointNormal(const vec3& pt, const vec3& norm) { return vec4(norm.x, norm.y, norm.z, -norm.Dot(pt)); }
 inline float distanceFromPlane(const vec3& pt, const vec4& plane) { return -plane.xyz().Dot(pt) - plane.w; }
 
-inline bool hitPlane(vec4 p, ray r) { return (distanceFromPlane(r.a, p) > 0) != (distanceFromPlane(r.b, p) > 0); }
+inline bool hitPlane(const vec4& p, const vec3& a, const vec3& b) { return (distanceFromPlane(a, p) > 0) != (distanceFromPlane(b, p) > 0); }
 
-inline vec3 intersectPlane(vec4 p, ray r) {
+inline float intersectPlane(vec4 p, ray r) {
 	vec3 dirnorm = r.dir().getNormalized();
 	float denom = p.xyz().Dot(dirnorm);
 
 	//	Line is axis of plane
 	if (denom == 0.0f)
-		return p.pt();
+		return 0.0f;
 
 	// Place both in same frame
 	float n = p.w +
@@ -39,7 +39,5 @@ inline vec3 intersectPlane(vec4 p, ray r) {
 		p.z + r.a.z;
 
 	//	Get Distance to intersect
-	float dist = n / denom;
-
-	return (r.a + (dirnorm * (dist)));
+	return n / denom;
 }
