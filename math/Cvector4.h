@@ -32,6 +32,7 @@ public:
 // 	void Invert();
 
 	//	Accesors
+	inline vec3 pt() const { return vec3(x, y, z)*w; }
 	inline vec3 xyz() const { return vec3(x, y, z); }
 // 	vec3 getLongitude() const;
 // 	vec3 getLatitude() const;

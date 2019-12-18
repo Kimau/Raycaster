@@ -2,7 +2,7 @@
 
 #include "core.h"
 #include "gltex.h"
-#include "math/Cvector2.h"
+#include "math/algebra.h"
 #include <GL/gl3w.h>
 
 // Viewport Stuff
@@ -20,4 +20,5 @@ extern bool g_imguiShowTestWindow;
 extern bool g_request_brute_ray;
 extern ImVec4 g_clearColour;
 extern vec2 g_lastclick;
+extern vec3 g_camdir;
 extern float g_drawtest[4][4];

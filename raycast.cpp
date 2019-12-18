@@ -14,12 +14,23 @@ bool hit_sphere(const vec4& sphere, const ray& r) {
 
 vec3 color(const ray& r) {
 	vec3 unit_direction = r.dir().getNormalized();
-	float t = 0.5f*unit_direction.y + 1.0f;
 
 	const vec3 ground(1.0f, 1.0f, 1.0f);
 	const vec3 sky(0.5f, 0.7f, 1.0f);
-	
-	return lerp(sky, ground, t);
+
+	vec3 col = lerp(ground, sky, -unit_direction.y);
+	if (unit_direction.y > 0.0f) {
+		vec4 floor(0.0f, 1.0f, 0.0f, 0.0f);
+
+		vec3 fpt = intersectPlane(floor, r);
+
+		if ((sinf(fpt.x*PI*1.0f) > 0) != (sinf(fpt.z*PI*1.0f) > 0))
+			col = vec3(0.6f, 0.6f, 0.6f);
+		else
+			col = vec3(0.8f, 0.8f, 0.8f);
+	}
+
+	return col;
 }
 
 void Raycast(ImageData &output) {
@@ -29,9 +40,13 @@ void Raycast(ImageData &output) {
   float ratio = float(output.width) / float(output.height);
 
   ray cam(vec3(), vec3(0.0f, 0.0f, -1.0f));
-  vec3 topleft(-ratio, -1.0f, 0.0f);
+  vec3 topleft(-ratio, -1.0f, -1.0f);
   vec3 hor(ratio * 2.0f, 0.0f, 0.0f);
   vec3 ver(0.0f, 2.0f, 0.0f);
+
+  cam.b.RotateX(g_camdir.x);
+  cam.b.RotateY(g_camdir.y);
+  cam.b.RotateZ(g_camdir.z);
 
   int c = 0;
   for (int y = output.height - 1; y >= 0; --y) {
