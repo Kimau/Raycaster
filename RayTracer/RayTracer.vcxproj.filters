@@ -75,6 +75,9 @@
     <ClCompile Include="..\raycast.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\math\Cvector4.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\imgui_impl_sdl_gl3.h">
@@ -124,6 +127,15 @@
     </ClInclude>
     <ClInclude Include="..\core.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\CRay.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\Cvector4.h">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\math\algebra.h">
+      <Filter>Math</Filter>
     </ClInclude>
     <ClInclude Include="..\types.h">
       <Filter>Source Files</Filter>

@@ -7,8 +7,18 @@ typedef char s8;
 typedef __int16 s16;
 typedef __int32 s32;
 
-class CPlane;
-class Quat;
-class Vec3;
-class Vec2;
-class Ray;
+struct quat;
+struct vec2;
+struct vec3;
+struct vec4;
+struct ray;
+
+typedef vec2 CTexCoord;
+typedef vec4 CSphere;
+
+typedef vec3 CVert;
+typedef vec3 CNorm;
+
+#define PI 3.141592654f // Simpler PI
+#define DEG_TO_RAD 0.017453292519943f
+#define RAD_TO_DEG 57.295779513f

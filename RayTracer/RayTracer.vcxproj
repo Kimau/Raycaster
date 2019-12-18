@@ -146,6 +146,7 @@
     <ClCompile Include="..\math\CQuaternion.cpp" />
     <ClCompile Include="..\math\Cvector2.cpp" />
     <ClCompile Include="..\math\CVector3.cpp" />
+    <ClCompile Include="..\math\Cvector4.cpp" />
     <ClCompile Include="..\program.cpp" />
     <ClCompile Include="..\raycast.cpp" />
   </ItemGroup>
@@ -161,10 +162,13 @@
     <ClInclude Include="..\libs\stb\stb_image.h" />
     <ClInclude Include="..\libs\stb\stb_truetype.h" />
     <ClInclude Include="..\libs\zed_net.h" />
+    <ClInclude Include="..\math\algebra.h" />
     <ClInclude Include="..\math\CPlane.h" />
     <ClInclude Include="..\math\CQuaternion.h" />
+    <ClInclude Include="..\math\CRay.h" />
     <ClInclude Include="..\math\Cvector2.h" />
     <ClInclude Include="..\math\CVector3.h" />
+    <ClInclude Include="..\math\Cvector4.h" />
     <ClInclude Include="..\program.h" />
     <ClInclude Include="..\types.h" />
   </ItemGroup>

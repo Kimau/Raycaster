@@ -1,37 +1,29 @@
 #pragma once
-
-//	Defines
-#define PI 3.141592654f // Simpler PI
-#define GET_RADIANS(deg)                                                       \
-  (float)((deg * PI) / 180.0f) // Quick Convert Deg to Rad
-
-//	Includes
-#include "CVector3.h"
-#include <math.h>
+#include "../types.h"
 
 //	Quaternion Class
 //	Float based so beware floating Errors
-class Quat {
+struct quat {
 public:
   //	Constructors
-  Quat();
-  Quat(float _x, float _y, float _z, float _w);
-  Quat(Vec3 _axis, float _rad);
+  quat();
+  quat(float _x, float _y, float _z, float _w);
+  quat(vec3 _axis, float _rad);
 
   //	Operators
-  Quat operator*(const Quat &_other);
+  quat operator*(const quat &_other);
 
   //	Self Operators
-  void operator=(const Quat &_other);
-  void operator*=(const Quat &_other);
+  void operator=(const quat &_other);
+  void operator*=(const quat &_other);
 
   //	Functions
   void Conjugate();
   void Normalize();
   void CreateMatrix(float *_matrix);
   //	Accessors
-  Quat getNormalized();
-  Quat getConjugated();
+  quat getNormalized();
+  quat getConjugated();
 
   float x, y, z, w;
 };

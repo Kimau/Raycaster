@@ -1,13 +1,15 @@
 #include "CQuaternion.h"
+#include "CVector3.h"
+#include <math.h>
 
 //		CONSTRUCTORS
 //	Blank Constructor
-Quat::Quat() : x(0.0f), y(0.0f), z(0.0f), w(1.0f) {}
+quat::quat() : x(0.0f), y(0.0f), z(0.0f), w(1.0f) {}
 //	Initiated Constructor
-Quat::Quat(float _x, float _y, float _z, float _w)
+quat::quat(float _x, float _y, float _z, float _w)
     : x(_x), y(_y), z(_z), w(_w) {}
 //	Quat from Axis
-Quat::Quat(Vec3 _axis, float _rad) {
+quat::quat(vec3 _axis, float _rad) {
   _axis.Normalize();
 
   float _sine = sinf(_rad * 0.5f);
@@ -23,8 +25,8 @@ Quat::Quat(Vec3 _axis, float _rad) {
 //		OPERATORS
 //	Multiplication
 //	Q1 (dot) Q2 + Q1 (cross) Q2
-Quat Quat::operator*(const Quat &_other) {
-  Quat _retVaule;
+quat quat::operator*(const quat &_other) {
+  quat _retVaule;
 
   _retVaule.x = w * _other.x + x * _other.w + y * _other.z - z * _other.y;
   _retVaule.y = w * _other.y - x * _other.z + y * _other.w + z * _other.x;
@@ -35,15 +37,15 @@ Quat Quat::operator*(const Quat &_other) {
 }
 //		SELF OPERATORS
 //	Assignment Operator
-void Quat::operator=(const Quat &_other) {
+void quat::operator=(const quat &_other) {
   x = _other.x;
   y = _other.y;
   z = _other.z;
   w = _other.w;
 }
 //	Multiplication with Self
-void Quat::operator*=(const Quat &_other) {
-  Quat _retVaule;
+void quat::operator*=(const quat &_other) {
+  quat _retVaule;
 
   _retVaule.x = w * _other.x + x * _other.w + y * _other.z - z * _other.y;
   _retVaule.y = w * _other.y - x * _other.z + y * _other.w + z * _other.x;
@@ -58,13 +60,13 @@ void Quat::operator*=(const Quat &_other) {
 
 //		FUNCTIONS
 //	Negate everything except w
-void Quat::Conjugate() {
+void quat::Conjugate() {
   x = -x;
   y = -y;
   z = -z;
 }
 //	Normalize Q
-void Quat::Normalize() {
+void quat::Normalize() {
   float _length = 1.0f / sqrtf(x * x + y * y + z * z + w * w);
   x *= _length;
   y *= _length;
@@ -72,7 +74,7 @@ void Quat::Normalize() {
 }
 
 //	Creates a 4x4 Transform Matrix
-void Quat::CreateMatrix(float *_matrix = 0) {
+void quat::CreateMatrix(float *_matrix = 0) {
   //	Allocate Memory
   if (!_matrix)
     _matrix = new float[16];
@@ -100,9 +102,9 @@ void Quat::CreateMatrix(float *_matrix = 0) {
 }
 //		ACCESORS
 //	Get Normalize version of Q
-Quat Quat::getNormalized() {
+quat quat::getNormalized() {
   float _length = 1.0f / sqrtf(x * x + y * y + z * z + w * w);
-  return Quat(x * _length, y * _length, z * _length, w);
+  return quat(x * _length, y * _length, z * _length, w);
 }
 //	Get Conjugated version of Q
-Quat Quat::getConjugated() { return Quat(-x, -y, -z, w); }
+quat quat::getConjugated() { return quat(-x, -y, -z, w); }

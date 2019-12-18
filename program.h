@@ -19,5 +19,5 @@ void Raycast(ImageData &output);
 extern bool g_imguiShowTestWindow;
 extern bool g_request_brute_ray;
 extern ImVec4 g_clearColour;
-extern Vec2 g_lastclick;
+extern vec2 g_lastclick;
 extern float g_drawtest[4][4];

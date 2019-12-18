@@ -3,7 +3,7 @@
 bool g_imguiShowTestWindow = false;
 bool g_request_brute_ray = false;
 ImVec4 g_clearColour = ImColor(114, 144, 154);
-Vec2 g_lastclick = Vec2(SCREEN_WIDTH * 0.5f, SCREEN_HEIGHT * 0.5f);
+vec2 g_lastclick = vec2(SCREEN_WIDTH * 0.5f, SCREEN_HEIGHT * 0.5f);
 float g_drawtest[4][4] = {{2.0f / SCREEN_WIDTH, 0, 0, 0},
                           {0.0f, 2.0f / SCREEN_HEIGHT, 0, 0},
                           {0, 0, -1.0f, 0},
@@ -18,7 +18,7 @@ bool handleInput(SDL_Event event) {
   switch (event.type) {
   case SDL_MOUSEMOTION:
     if (event.motion.state & SDL_BUTTON_LMASK) {
-      g_lastclick = Vec2(event.motion.x, event.motion.y);
+      g_lastclick = vec2(event.motion.x, event.motion.y);
     }
     break;
 
