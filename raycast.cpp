@@ -3,7 +3,7 @@
 #include "math/algebra.h"
 #include "program.h"
 
-bool hit_sphere(const vec4& sphere, const ray& r) {
+float hit_sphere(const vec4& sphere, const ray& r) {
 	vec3 oc = r.origin() - sphere.xyz();
 	float a = r.dir().Dot(r.dir());
 	float b = 2.0f * oc.Dot(r.dir());
@@ -12,8 +12,8 @@ bool hit_sphere(const vec4& sphere, const ray& r) {
 
 	if (discriminant < 0)
 		return -1.0f;
-	
-	return (-b - sqrt(discriminant)) / (2.0*a);
+
+	return (-b - sqrtf(discriminant)) / (2.0f*a);
 }
 
 vec3 color(const ray& r) {

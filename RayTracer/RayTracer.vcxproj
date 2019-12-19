@@ -142,6 +142,7 @@
     <ClCompile Include="..\libs\imgui\imgui_demo.cpp" />
     <ClCompile Include="..\libs\imgui\imgui_draw.cpp" />
     <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="..\math\algebra.cpp" />
     <ClCompile Include="..\math\CQuaternion.cpp" />
     <ClCompile Include="..\math\Cvector2.cpp" />
     <ClCompile Include="..\math\CVector3.cpp" />
@@ -159,6 +160,7 @@
     <ClInclude Include="..\libs\atomic\atomicops.h" />
     <ClInclude Include="..\libs\atomic\readerwriterqueue.h" />
     <ClInclude Include="..\libs\stb\stb_image.h" />
+    <ClInclude Include="..\libs\stb\stb_image_write.h" />
     <ClInclude Include="..\libs\stb\stb_truetype.h" />
     <ClInclude Include="..\libs\zed_net.h" />
     <ClInclude Include="..\math\algebra.h" />

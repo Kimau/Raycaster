@@ -18,6 +18,7 @@ struct ImageData {
   ImageData(const char *friendlyName);
 
   void LoadFromFile(const char *filename);
+  int SaveFile(const char *filename);
   void BlankImage(int width, int height);
   bool CopyToGPU();
   void FreeImage();

@@ -18,6 +18,7 @@ void Raycast(ImageData &output);
 //
 extern bool g_imguiShowTestWindow;
 extern bool g_request_brute_ray;
+extern bool g_request_save_file;
 extern ImVec4 g_clearColour;
 extern vec2 g_lastclick;
 extern vec3 g_camdir;

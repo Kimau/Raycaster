@@ -4,7 +4,10 @@
 
 #define STBI_ASSERT(x) SDL_assert(x)
 #define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+
 #include "libs/stb/stb_image.h"
+#include "libs/stb/stb_image_write.h"
 
 ImageData::ImageData(const char *friendlyName)
     : name(friendlyName), loaded(false), width(-1), height(-1),
@@ -23,6 +26,17 @@ void ImageData::LoadFromFile(const char *filename) {
     else
       imgType = GL_RGBA;
   }
+}
+
+int ImageData::SaveFile(const char *filename) {
+	stbi_flip_vertically_on_write(true);
+
+	if (imgType == GL_RGB)
+		return stbi_write_png(filename, width, height, 3, imgData, 0);
+	else if (imgType == GL_RGBA)
+		return stbi_write_png(filename, width, height, 4, imgData, 0);
+	else
+		return 0;
 }
 
 void ImageData::BlankImage(int _width, int _height) {

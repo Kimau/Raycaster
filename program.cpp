@@ -3,6 +3,7 @@
 bool g_imguiShowTestWindow = false;
 bool g_always_cast = false;
 bool g_request_brute_ray = false;
+bool g_request_save_file = false;
 ImVec4 g_clearColour = ImColor(114, 144, 154);
 vec2 g_lastclick = vec2(SCREEN_WIDTH * 0.5f, SCREEN_HEIGHT * 0.5f);
 vec3 g_camdir = vec3(0.0f, 0.0f, -1.0f);
@@ -93,6 +94,9 @@ void update() {
     if ((g_request_brute_ray == false) &&
         (ImGui::Button("Brute Force Raycast")))
       g_request_brute_ray = true;
+
+	if (ImGui::Button("Save File"))
+		g_request_save_file = true;
   }
   ImGui::End();
 }
