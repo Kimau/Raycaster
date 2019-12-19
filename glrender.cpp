@@ -5,7 +5,6 @@
 #include "gltex.h"
 #include "math/Cvector2.h"
 
-#include <time.h>
 #include <stdio.h>
 
 GLuint g_testVertexArrays;
@@ -253,9 +252,8 @@ void render(SDL_Window *window) {
 	  g_request_save_file = false;
 
 	  char filename[255] = { 0 };
-	  time_t t = time(NULL);
 	  
-	  sprintf(filename, "ray_%llu.png", t);
+	  sprintf(filename, "ray_%llu.png", g_walltime);
 	  g_rayresult.SaveFile(filename);
   }
 }

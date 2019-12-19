@@ -3,9 +3,11 @@
 typedef unsigned char u8;
 typedef unsigned __int16 u16;
 typedef unsigned __int32 u32;
+typedef unsigned __int64 u64;
 typedef char s8;
 typedef __int16 s16;
 typedef __int32 s32;
+typedef __int64 s64;
 
 struct quat;
 struct vec2;

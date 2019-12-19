@@ -1,5 +1,7 @@
 #include "program.h"
 
+#include <time.h>
+
 bool g_imguiShowTestWindow = false;
 bool g_always_cast = false;
 bool g_request_brute_ray = false;
@@ -8,6 +10,9 @@ ImVec4 g_clearColour = ImColor(114, 144, 154);
 vec2 g_lastclick = vec2(SCREEN_WIDTH * 0.5f, SCREEN_HEIGHT * 0.5f);
 vec3 g_camdir = vec3(0.0f, 0.0f, -1.0f);
 vec3 g_campos = vec3(0.0f, 0.0f, 0.0f);
+
+u64 g_walltime = time(NULL);
+u64 g_starttime = time(NULL);
 
 float g_drawtest[4][4] = {{2.0f / SCREEN_WIDTH, 0, 0, 0},
                           {0.0f, 2.0f / SCREEN_HEIGHT, 0, 0},
@@ -51,6 +56,8 @@ bool handleInput(SDL_Event event) {
 }
 
 void update() {
+	g_walltime = time(NULL);
+
   if (ImGui::Begin("Debug Tools")) {
     ImGui::Text("Window Hover %d", ImGui::IsMouseHoveringAnyWindow());
     ImGui::ColorEdit3("clear color", (float *)&g_clearColour);

@@ -9,6 +9,7 @@ public:
 	vec4(float _X, float _Y, float _Z, float _W) : x(_X), y(_Y), z(_Z), w(_W) {}
 	vec4(double _X, double _Y, double _Z, double _W) : x(float(_X)), y(float(_Y)), z(float(_Z)), w(float(_W)) {}
 	vec4(int _X, int _Y, int _Z, int _W) : x(float(_X)), y(float(_Y)), z(float(_Z)), w(float(_W)) {}
+	vec4(const vec3& v, float t) : x(v.x), y(v.y), z(v.z), w(t) {}
 	vec4(const vec4 &v) : x(v.x), y(v.y), z(v.z), w(v.w) {}
 
 	//	Operators

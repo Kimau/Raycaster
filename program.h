@@ -24,3 +24,6 @@ extern vec2 g_lastclick;
 extern vec3 g_camdir;
 extern vec3 g_campos;
 extern float g_drawtest[4][4];
+
+extern u64 g_walltime;
+extern u64 g_starttime;
