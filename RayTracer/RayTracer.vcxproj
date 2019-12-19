@@ -142,7 +142,6 @@
     <ClCompile Include="..\libs\imgui\imgui_demo.cpp" />
     <ClCompile Include="..\libs\imgui\imgui_draw.cpp" />
     <ClCompile Include="..\main.cpp" />
-    <ClCompile Include="..\math\CPlane.cpp" />
     <ClCompile Include="..\math\CQuaternion.cpp" />
     <ClCompile Include="..\math\Cvector2.cpp" />
     <ClCompile Include="..\math\CVector3.cpp" />
@@ -163,7 +162,6 @@
     <ClInclude Include="..\libs\stb\stb_truetype.h" />
     <ClInclude Include="..\libs\zed_net.h" />
     <ClInclude Include="..\math\algebra.h" />
-    <ClInclude Include="..\math\CPlane.h" />
     <ClInclude Include="..\math\CQuaternion.h" />
     <ClInclude Include="..\math\CRay.h" />
     <ClInclude Include="..\math\Cvector2.h" />

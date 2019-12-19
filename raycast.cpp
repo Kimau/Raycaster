@@ -9,7 +9,11 @@ bool hit_sphere(const vec4& sphere, const ray& r) {
 	float b = 2.0f * oc.Dot(r.dir());
 	float c = oc.Dot(oc) - sphere.w*sphere.w;
 	float discriminant = b * b - 4 * a*c;
-	return (discriminant > 0);
+
+	if (discriminant < 0)
+		return -1.0f;
+	
+	return (-b - sqrt(discriminant)) / (2.0*a);
 }
 
 vec3 color(const ray& r) {
@@ -18,8 +22,11 @@ vec3 color(const ray& r) {
 	const vec3 ground(1.0f, 1.0f, 1.0f);
 	const vec3 sky(0.5f, 0.7f, 1.0f);
 
-	if (hit_sphere(vec4(0.0f, 0.0f, -4.0f, 0.5f), r))
-		return vec3(1.0f, 0.0f, 0.0f);
+	float t = hit_sphere(vec4(0.0f, 0.0f, -4.0f, 0.5f), r);
+	if (t > 0.0) {
+		vec3 n = r.PointAt(t) - vec3(0.0f, 0.0f, -1.0f);
+		return vec3(n)*0.5f + vec3(1.0f, 1.0f, 1.0f);
+	}
 
 	// Hit Ground
 	vec4 floor(0.0f, 1.0f, 0.0f, 0.0f);
