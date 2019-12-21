@@ -171,13 +171,13 @@ bool setupOrthViewport(int width, int height) { return false; }
 
 // Render
 void render(SDL_Window *window) {
-  int width = SCREEN_WIDTH;
-  int height = SCREEN_HEIGHT;
-  float invWidth = 1.0f / float(width);
-  float invHeight = 1.0f / float(height);
-
   // Setup Render State
-  glViewport(0, 0, width, height);
+  glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+  const int ray_width = int(g_ray_scale.x / 32.0f) * 32;
+  const int ray_height = int(g_ray_scale.y / 32.0f) * 32;
+
+  const float screen_ratio = float(SCREEN_WIDTH) / float(SCREEN_HEIGHT);
+  const float ray_ratio = float(ray_width) / float(ray_height);
 
   // Clear
   glClearColor(g_clearColour.x, g_clearColour.y, g_clearColour.z,
@@ -196,7 +196,10 @@ void render(SDL_Window *window) {
   if (g_rayresult.IsBindable()) {
 
     const float ortho_projection[4][4] = {
-        {1.0f, 0, 0, 0}, {0.0f, 1.0f, 0, 0}, {0, 0, -1.0f, 0}, {0, 0, 0, 1.0f}};
+		{ ray_ratio / screen_ratio, 0, 0, 0},
+		{0.0f, screen_ratio / ray_ratio, 0, 0},
+		{0, 0, -1.0f, 0}, 
+		{0, 0, 0, 1.0f}};
 
     ProgramData *prog = ProgramData::GetProg(PD_BASIC_TEX);
     prog->bind();
@@ -238,11 +241,14 @@ void render(SDL_Window *window) {
 
   // Post Render Bullshit
   if (g_request_brute_ray) {
-    if ((false == g_rayresult.loaded) || (g_rayresult.width != width) ||
-        (g_rayresult.height != height))
-      g_rayresult.BlankImage(width, height);
+    if ((false == g_rayresult.loaded) || (g_rayresult.width != ray_width) ||
+        (g_rayresult.height != ray_height))
+      g_rayresult.BlankImage(ray_width, ray_height);
 
-    Raycast(g_rayresult);
+	if(g_always_cast)
+		Raycast(g_rayresult, 10, false);
+	else 
+		Raycast(g_rayresult);
 
     g_rayresult.CopyToGPU();
     g_request_brute_ray = false;

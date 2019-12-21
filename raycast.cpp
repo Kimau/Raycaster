@@ -22,7 +22,7 @@ void CastBall(const vec4& ball, const ray &r, vec4 &col)
 {
 	float t = hit_sphere(ball, r);
 	if ((t > 0.0) && ((col.w < 0) || (col.w > t))) {
-		vec3 n = r.PointAt(t) - vec3(0.0f, 0.0f, -1.0f);
+		vec3 n = r.PointAt(t) - ball.xyz();
 		col = vec4(vec3(n)*0.5f + vec3(1.0f, 1.0f, 1.0f), t);
 	}
 }
@@ -59,28 +59,29 @@ vec3 color(const ray& r) {
 	return col.xyz();
 }
 
-void Raycast(ImageData &output) {
+void Raycast(ImageData &output, int pass_break /*= 1*/, bool border /*= true*/) {
 
-  float invWidth = 1.0f / float(output.width);
-  float invHeight = 1.0f / float(output.height);
-  float ratio = float(output.width) / float(output.height);
+  const float invWidth = 1.0f / float(output.width);
+  const float invHeight = 1.0f / float(output.height);
+  const float ratio = float(output.width) / float(output.height);
+  const int limit = output.width * output.height * 3;
 
-  ray cam(g_campos, g_camdir.getNormalized());
-  vec3 topleft(-ratio, -1.0f, -1.0f);
-  vec3 hor(ratio * 2.0f, 0.0f, 0.0f);
-  vec3 ver(0.0f, 2.0f, 0.0f);
+  const ray cam_dir(g_campos, g_camdir.getNormalized());
+  const vec3 top_left(-ratio, -1.0f, -1.0f);
+  const vec3 hor(ratio * 2.0f, 0.0f, 0.0f);
+  const vec3 ver(0.0f, 2.0f, 0.0f);
 
   int c = 0;
   for (int y = output.height - 1; y >= 0; --y) {
     float v = y * invHeight;
     for (int x = output.width - 1; x >= 0; --x) {
-		if ((rand() % 10) != 0) {
+		if ((pass_break > 1) && ((rand() % pass_break) != 0)) {
 			c += 3;
 			continue;
 		}
 
       float u = x * invWidth;
-	  ray ray(cam.origin(), cam.dir() + topleft + hor*u + ver*v);
+	  ray ray(cam_dir.origin(), cam_dir.dir() + top_left + hor*u + ver*v);
 
 	  vec3 col = color(ray);
 
@@ -88,5 +89,36 @@ void Raycast(ImageData &output) {
       output.imgData[c++] = char(255 * col.y);
       output.imgData[c++] = char(255 * col.z);
     }
+  }
+
+  assert(c <= limit);
+
+  if (border) {
+	  c = (0 * output.width * 3);
+	  for (int x = output.width - 1; x >= 0; --x) {
+		  output.imgData[c++] = char(0);
+		  output.imgData[c++] = char(0);
+		  output.imgData[c++] = char(0);
+	  }
+	  c = ((output.height - 1) * output.width * 3);
+	  for (int x = output.width - 1; x >= 0; --x) {
+		  output.imgData[c++] = char(0);
+		  output.imgData[c++] = char(0);
+		  output.imgData[c++] = char(0);
+	  }
+
+	  for (int y = output.height - 1; y >= 0; --y) {
+		  c = (y * output.width) * 3;
+		  output.imgData[c + 0] = char(0);
+		  output.imgData[c + 1] = char(0);
+		  output.imgData[c + 2] = char(0);
+
+		  c = ((y + 1) * output.width - 1) * 3;
+		  output.imgData[c + 0] = char(0);
+		  output.imgData[c + 1] = char(0);
+		  output.imgData[c + 2] = char(0);
+	  }
+
+	  assert(c <= limit);
   }
 }

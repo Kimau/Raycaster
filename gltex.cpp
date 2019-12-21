@@ -14,6 +14,8 @@ ImageData::ImageData(const char *friendlyName)
       imgType(GL_RGBA), glTex(-1) {}
 
 void ImageData::LoadFromFile(const char *filename) {
+	FreeImage();
+
   int depth;
   u8 *data = stbi_load(filename, &width, &height, &depth, 0);
 
@@ -40,6 +42,8 @@ int ImageData::SaveFile(const char *filename) {
 }
 
 void ImageData::BlankImage(int _width, int _height) {
+	FreeImage();
+
   width = _width;
   height = _height;
   imgType = GL_RGB;
@@ -66,8 +70,7 @@ bool ImageData::CopyToGPU() {
     return false;
   }
 
-  glTexImage2D(GL_TEXTURE_2D, 0, imgType, width, height, 0, imgType,
-               GL_UNSIGNED_BYTE, imgData);
+  glTexImage2D(GL_TEXTURE_2D, 0, imgType, width, height, 0, imgType, GL_UNSIGNED_BYTE, imgData);
 
   e = glGetError();
   if (e != GL_NO_ERROR) {
@@ -83,6 +86,7 @@ void ImageData::FreeImage() {
   if (!loaded)
     return;
 
+  glTexImage2D(GL_TEXTURE_2D, 0, imgType, width, height, 0, imgType, GL_UNSIGNED_BYTE, NULL);
   stbi_image_free(imgData);
   loaded = false;
 }
