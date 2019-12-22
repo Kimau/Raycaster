@@ -12,6 +12,7 @@
 
 int SCREEN_WIDTH = 900;
 int SCREEN_HEIGHT = 600;
+int SCREEN_FOV = 90;
 int SCREEN_FPS = 30;
 int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
 const char *SCREEN_TITLE = "Raycaster - Brute Force - GL";

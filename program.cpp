@@ -3,14 +3,14 @@
 #include <time.h>
 
 bool g_imguiShowTestWindow = false;
-bool g_always_cast = false;
+bool g_always_cast = true; 
 bool g_request_brute_ray = false;
 bool g_request_save_file = false;
 ImVec4 g_clearColour = ImColor(114, 144, 154);
 vec2 g_lastclick = vec2(SCREEN_WIDTH * 0.5f, SCREEN_HEIGHT * 0.5f);
-vec3 g_camdir = vec3(0.0f, 0.0f, -1.0f);
-vec3 g_campos = vec3(0.0f, 0.0f, 0.0f);
-vec2 g_ray_scale = vec2(SCREEN_WIDTH, SCREEN_HEIGHT);
+vec3 g_camdir = vec3(0.0f, 1.0f, 0.0f);
+vec3 g_campos = vec3(0.0f, 0.0f, 2.0f);
+vec2 g_ray_scale = vec2(SCREEN_WIDTH * 0.4f, SCREEN_HEIGHT * 0.4f);
 
 u64 g_walltime = time(NULL);
 u64 g_starttime = time(NULL);
@@ -39,12 +39,25 @@ bool handleInput(SDL_Event event) {
   case SDL_MOUSEBUTTONUP:
     break;
 
+  case SDL_KEYDOWN:
+	  switch (event.key.keysym.sym) {
+		  case SDLK_w: g_campos += g_camdir * 0.1f; break;
+		  case SDLK_s: g_campos -= g_camdir * 0.1f; break;
+		  case SDLK_a: g_campos -= g_camdir * up_vec * 0.1f; break;
+		  case SDLK_d: g_campos += g_camdir * up_vec * 0.1f; break;
+		  case SDLK_q: g_campos += up_vec * 0.1f; break;
+		  case SDLK_e: g_campos -= up_vec * 0.1f; break;
+
+		  case SDLK_LEFT:  g_camdir = g_camdir.RotateZ(-5.0f); break;
+		  case SDLK_RIGHT: g_camdir = g_camdir.RotateZ(+5.0f); break;
+		  case SDLK_UP:    g_camdir = g_camdir.Rotate(-5.0f, g_camdir * up_vec); break;
+		  case SDLK_DOWN:  g_camdir = g_camdir.Rotate(+5.0f, g_camdir * up_vec); break;
+	  } break;
+
   case SDL_KEYUP:
     switch (event.key.keysym.sym) {
-    case SDLK_ESCAPE:
-      return true;
-    }
-    break;
+		case SDLK_ESCAPE: return true;
+    } break;
 
   case SDL_QUIT:
     return true;

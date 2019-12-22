@@ -12,12 +12,12 @@ public:
 	vec3(const vec3 &v) : x(v.x), y(v.y), z(v.z) {}
 
   //	Operators
-  inline vec3 operator+(vec3 v) const { return vec3(x + v.x, y + v.y, z + v.z); }
-  inline vec3 operator-(vec3 v) const { return vec3(x - v.x, y - v.y, z - v.z); }
+  inline vec3 operator+(const vec3& v) const { return vec3(x + v.x, y + v.y, z + v.z); }
+  inline vec3 operator-(const vec3& v) const { return vec3(x - v.x, y - v.y, z - v.z); }
   inline vec3 operator*(float s) const { return vec3(x * s, y*s, z*s); }
   inline vec3 operator/(float s) const { return vec3(x / s, y / s, z / s); }
 
-  inline vec3 operator*(vec3 v) const {
+  inline vec3 operator*(const vec3& v) const {
 	  return vec3(
 		  (y * v.z) - (z * v.y),
 		  (z * v.x) - (x * v.z),
@@ -25,21 +25,18 @@ public:
   }
 
   //	Self Operators
-  inline void operator+=(vec3 v) { x += v.x; y += v.y; z += v.z; }
-  inline void operator-=(vec3 v) { x -= v.x; y -= v.y; z -= v.z; }
+  inline void operator+=(const vec3& v) { x += v.x; y += v.y; z += v.z; }
+  inline void operator-=(const vec3& v) { x -= v.x; y -= v.y; z -= v.z; }
   inline void operator*=(float s) { x *= s; y *= s; z *= s; }
   inline void operator/=(float s) { x /= s; y /= s; z /= s; }
-  inline void operator*=(vec3 _vector) {
+
+  inline void operator*=(const vec3& _vector) {
 	  x = ((y * _vector.z) - (z * _vector.y));
 	  y = ((z * _vector.x) - (x * _vector.z));
 	  z = ((x * _vector.y) - (y * _vector.x));
   }
 
   //	Functions
-  void RotateX(float _degree);
-  void RotateY(float _degree);
-  void RotateZ(float _degree);
-  void Rotate(float _degree, vec3 _axis);
   void Normalize();
   void Invert();
 
@@ -48,13 +45,19 @@ public:
   vec3 getNormalized() const;
   vec3 getLongitude() const;
   vec3 getLatitude() const;
+  vec3 RotateX(float _degree) const;
+  vec3 RotateY(float _degree) const;
+  vec3 RotateZ(float _degree) const;
+  vec3 Rotate(float _degree, const vec3& _axis) const;
   float Magnitude() const;
   float SqrdMag() const;
-  float Dot(vec3 _vector) const;
-  float Angle(vec3 _vector) const;
-  float Distance(vec3 _point, vec3 _orig = vec3(0, 0, 0)) const;
-  float DistanceFast(vec3 _point) const;
+  float Dot(const vec3& _vector) const;
+  float Angle(const vec3& _vector) const;
+  float Distance(const vec3& _point, const vec3& _orig = vec3(0, 0, 0)) const;
+  float DistanceFast(const vec3& _point) const;
   void getArray(float *_array) const;
 
   float x, y, z;
 };
+
+extern const vec3 up_vec;

@@ -13,8 +13,7 @@ float distanceFromPlane(const vec3& pt, const vec4& plane) { return -plane.xyz()
 bool hitPlane(const vec4& p, const vec3& a, const vec3& b) { return (distanceFromPlane(a, p) > 0) != (distanceFromPlane(b, p) > 0); }
 
 float intersectPlane(vec4 p, ray r) {
-	vec3 dirnorm = r.dir().getNormalized();
-	float denom = p.xyz().Dot(dirnorm);
+	float denom = p.xyz().Dot(r.dir().getNormalized());
 
 	//	Line is axis of plane
 	if (denom == 0.0f)

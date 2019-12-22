@@ -4,6 +4,8 @@
 #include "program.h"
 #include <stdlib.h>
 
+// Z Up
+
 float hit_sphere(const vec4& sphere, const ray& r) {
 	vec3 oc = r.origin() - sphere.xyz();
 	float a = r.dir().Dot(r.dir());
@@ -32,9 +34,9 @@ void CastFloor(vec4 floor, const ray &r, vec4 &col)
 {
 	float t = intersectPlane(floor, r);
 	if ((t > 0.0) && ((col.w < 0) || (col.w > t))) {
-		vec3 fpt = r.a + r.b.getNormalized()*t;
+		vec3 fpt = r.PointAt(t);
 
-		if ((sinf(fpt.x*PI*1.0f) > 0) != (sinf(fpt.z*PI*1.0f) > 0))
+		if ((sinf(fpt.x*PI*1.0f) > 0) != (sinf(fpt.y*PI*1.0f) > 0))
 			col = vec4(0.6f, 0.6f, 0.6f, t);
 		else
 			col = vec4(0.8f, 0.8f, 0.8f, t);
@@ -42,18 +44,18 @@ void CastFloor(vec4 floor, const ray &r, vec4 &col)
 }
 
 vec3 color(const ray& r) {
-	vec3 unit_direction = r.dir().getNormalized();
 
 	const vec3 ground(1.0f, 1.0f, 1.0f);
 	const vec3 sky(0.5f, 0.7f, 1.0f);
-	vec4 col = vec4(lerp(ground, sky, -unit_direction.y), -1.0f);
+	vec4 col = vec4(lerp(ground, sky, r.b.z), -1.0f);
 
 	CastBall(vec4(-3.0f, 0.0f, -4.0f, 0.5f), r, col);
 	CastBall(vec4(+3.0f, 0.0f, -4.0f, 0.5f), r, col);
 	CastBall(vec4(0.0f, 1.3f, -4.0f, 0.5f), r, col);
 
 	// Hit Ground
-	CastFloor(vec4(0.0f, 1.0f, 0.0f, 0.0f), r, col);
+	CastFloor(vec4(0.0f, 0.0f, 1.0f, 0.0f), r, col); 
+	//CastFloor(createPlaneFromPointNormal(up_vec, vec3(0.0f, 10.0f, 0.0f)), r, col);// vec4(0.0f, 0.0f, 1.0f, 10.0f), r, col);
 
 	// Hit Sky
 	return col.xyz();
@@ -66,11 +68,10 @@ void Raycast(ImageData &output, int pass_break /*= 1*/, bool border /*= true*/) 
   const float ratio = float(output.width) / float(output.height);
   const int limit = output.width * output.height * 3;
 
-  const ray cam_dir(g_campos, g_camdir.getNormalized());
-  const vec3 top_left(-ratio, -1.0f, -1.0f);
-  const vec3 hor(ratio * 2.0f, 0.0f, 0.0f);
-  const vec3 ver(0.0f, 2.0f, 0.0f);
-
+  const ray cam(g_campos, g_camdir.getNormalized());
+  const vec3 up(0.0f, 0.0f, 1.0f);
+  const vec3 perp = up * cam.dir();
+  
   int c = 0;
   for (int y = output.height - 1; y >= 0; --y) {
     float v = y * invHeight;
@@ -81,7 +82,8 @@ void Raycast(ImageData &output, int pass_break /*= 1*/, bool border /*= true*/) 
 		}
 
       float u = x * invWidth;
-	  ray ray(cam_dir.origin(), cam_dir.dir() + top_left + hor*u + ver*v);
+	  ray ray(cam.origin(), cam.dir() + up * (v - 0.5f) + perp * (u - 0.5f));
+	  ray.b.Normalize();
 
 	  vec3 col = color(ray);
 

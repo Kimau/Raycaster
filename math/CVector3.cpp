@@ -2,59 +2,56 @@
 #include <float.h>
 #include <math.h>
 
+const vec3 up_vec(0.0f, 0.0f, 1.0f);
+
 //		Functions
 //	Rotate Around the X axis
-void vec3::RotateX(float _degree) {
+vec3 vec3::RotateX(float _degree) const {
   float _rad = _degree * DEG_TO_RAD;
   float _cosAng = cosf(-_rad);
   float _sinAng = sinf(-_rad);
 
-  float _nY = y * _cosAng - z * _sinAng;
-  float _nZ = z * _cosAng + y * _sinAng;
-
-  y = _nY;
-  z = _nZ;
+  return vec3(x, 
+	  y * _cosAng - z * _sinAng,
+	  z * _cosAng + y * _sinAng);
 }
 //	Rotate Around the Y axis
-void vec3::RotateY(float _degree) {
+vec3 vec3::RotateY(float _degree) const {
   float _rad = _degree * DEG_TO_RAD;
   float _cosAng = cosf(-_rad);
   float _sinAng = sinf(-_rad);
 
-  float _nX = x * _cosAng + z * _sinAng;
-  float _nZ = z * _cosAng - x * _sinAng;
-
-  x = _nX;
-  z = _nZ;
+  return vec3(x * _cosAng + z * _sinAng,
+	  y,
+	  z * _cosAng - x * _sinAng);
 }
 //	Rotate Around the Z axis
-void vec3::RotateZ(float _degree) {
+vec3 vec3::RotateZ(float _degree) const {
   float _rad = _degree * DEG_TO_RAD;
   float _cosAng = cosf(-_rad);
   float _sinAng = sinf(-_rad);
 
-  float _nX = x * _cosAng - y * _sinAng;
-  float _nY = y * _cosAng + x * _sinAng;
-
-  x = _nX;
-  y = _nY;
+  return vec3(x * _cosAng - y * _sinAng,
+	  y * _cosAng + x * _sinAng,
+	  z);
 }
 //	Rotate Around the given axis
-void vec3::Rotate(float _degree, vec3 _axis) {
+vec3 vec3::Rotate(float _degree, const vec3& _axis) const {
   //	Get Vars
   float _rad = _degree * DEG_TO_RAD;
   float _cosAng = cosf(_rad);
   float _sinAng = sinf(_rad);
 
-  _axis.Normalize();
-  vec3 _Cross = vec3(x, y, z) * _axis;
-  _axis = _axis * Dot(_axis);
+  vec3 ax = _axis.getNormalized();
+  const vec3 _Cross = vec3(x, y, z) * ax;
+  ax = ax * Dot(ax);
 
   //	Rotate
-  x = _axis.x + (x - _axis.x) * _cosAng + _Cross.x * _sinAng;
-  y = _axis.y + (y - _axis.y) * _cosAng + _Cross.y * _sinAng;
-  z = _axis.z + (z - _axis.z) * _cosAng + _Cross.z * _sinAng;
+  return vec3(ax.x + (x - ax.x) * _cosAng + _Cross.x * _sinAng,
+	  ax.y + (y - ax.y) * _cosAng + _Cross.y * _sinAng,
+	  ax.z + (z - ax.z) * _cosAng + _Cross.z * _sinAng);
 }
+
 //	Normalizes the vector
 void vec3::Normalize() {
   // Get the magnitude
@@ -114,11 +111,11 @@ float vec3::Magnitude() const { return (sqrtf(x * x + y * y + z * z)); }
 //	Returns the Squared Magnitude of a Vector
 float vec3::SqrdMag() const { return x * x + y * y + z * z; }
 //	Gets the Dot product of the Vectors
-float vec3::Dot(vec3 _vector) const {
+float vec3::Dot(const vec3& _vector) const {
   return ((x * _vector.x) + (y * _vector.y) + (z * _vector.z));
 }
 //	Gets the angle between
-float vec3::Angle(vec3 _vector) const {
+float vec3::Angle(const vec3& _vector) const {
   // Get the arc cosine of the (dotProduct / vectorsMagnitude) which is the
   // angle in RADIANS.
   // (IE.   PI/2 radians = 90 degrees      PI radians = 180 degrees    2*PI
@@ -145,15 +142,14 @@ float vec3::Angle(vec3 _vector) const {
   return (_angle);
 }
 //	Gets the distance to the closest point on the line
-float vec3::Distance(vec3 _point, vec3 _orig) const {
-  _point -= _orig;
-  vec3 _top = (_point * (*this));
+float vec3::Distance(const vec3& _point, const vec3& _orig) const {
+  vec3 _top = ((_point - _orig) * (*this));
   _top /= Magnitude();
   return _top.Magnitude();
 }
 //	Gets the distance to the closest point on the line
 //	ASSUMES (this) is from Origin and length 1
-float vec3::DistanceFast(vec3 _point) const {
+float vec3::DistanceFast(const vec3& _point) const {
   vec3 _top = (_point * (*this));
   return _top.Magnitude();
 }
