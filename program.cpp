@@ -12,8 +12,8 @@ vec3 g_camdir = vec3(0.0f, 1.0f, 0.0f);
 vec3 g_campos = vec3(0.0f, 0.0f, 2.0f);
 vec2 g_ray_scale = vec2(SCREEN_WIDTH * 0.4f, SCREEN_HEIGHT * 0.4f);
 
-u64 g_walltime = time(NULL);
-u64 g_starttime = time(NULL);
+u64 g_walltime = 0;
+u64 g_starttime = 0;
 
 float g_drawtest[4][4] = {{2.0f / SCREEN_WIDTH, 0, 0, 0},
                           {0.0f, 2.0f / SCREEN_HEIGHT, 0, 0},
@@ -70,7 +70,7 @@ bool handleInput(SDL_Event event) {
 }
 
 void update() {
-	g_walltime = time(NULL);
+	g_walltime = SDL_GetTicks();
 
   if (ImGui::Begin("Debug Tools")) {
     ImGui::Text("Window Hover %d", ImGui::IsMouseHoveringAnyWindow());

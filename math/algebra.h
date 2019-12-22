@@ -18,6 +18,4 @@ vec4 createPlaneFromPoints(const vec3& a, const vec3& b, const vec3& c);
 vec4 createPlaneFromPointNormal(const vec3& pt, const vec3& norm);
 float distanceFromPlane(const vec3& pt, const vec4& plane);
 
-bool hitPlane(const vec4& p, const vec3& a, const vec3& b);
 
-float intersectPlane(vec4 p, ray r);

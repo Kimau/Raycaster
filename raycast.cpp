@@ -19,6 +19,17 @@ float hit_sphere(const vec4& sphere, const ray& r) {
 	return (-b - sqrtf(discriminant)) / (2.0f*a);
 }
 
+float hit_plane(const vec4& p, const ray& r) { // Assume Normalized
+	const vec3 pnorm = p.xyz();
+	float denom = pnorm.Dot(r.dir());
+
+	if (fabsf(denom) <= 0.000001f) return -1.0f; //	Line is axis of plane
+
+	const vec3 plane0 = p.xyz() * p.w;
+	const vec3 p0l0 = plane0 - r.origin();
+	return p0l0.Dot(pnorm) / denom;
+}
+
 
 void CastBall(const vec4& ball, const ray &r, vec4 &col)
 {
@@ -32,7 +43,7 @@ void CastBall(const vec4& ball, const ray &r, vec4 &col)
 
 void CastFloor(vec4 floor, const ray &r, vec4 &col)
 {
-	float t = intersectPlane(floor, r);
+	float t = hit_plane(floor, r);
 	if ((t > 0.0) && ((col.w < 0) || (col.w > t))) {
 		vec3 fpt = r.PointAt(t);
 
@@ -47,14 +58,14 @@ vec3 color(const ray& r) {
 
 	const vec3 ground(1.0f, 1.0f, 1.0f);
 	const vec3 sky(0.5f, 0.7f, 1.0f);
-	vec4 col = vec4(lerp(ground, sky, r.b.z), -1.0f);
+	vec4 col = vec4(lerp(ground, sky, saturate(r.b.z)), -1.0f);
 
-	CastBall(vec4(-3.0f, 0.0f, -4.0f, 0.5f), r, col);
-	CastBall(vec4(+3.0f, 0.0f, -4.0f, 0.5f), r, col);
-	CastBall(vec4(0.0f, 1.3f, -4.0f, 0.5f), r, col);
+	CastBall(vec4(-3.0f, 10.0f, 2.0f * sinf(g_walltime*0.001f), 0.5f), r, col);
+	CastBall(vec4( 0.0f, 10.0f, 2.0f, 0.5f), r, col);
+	CastBall(vec4(+3.0f, 10.0f, 0.0f, 0.5f), r, col);
 
 	// Hit Ground
-	CastFloor(vec4(0.0f, 0.0f, 1.0f, 0.0f), r, col); 
+	CastFloor(vec4(0.0f, 0.0f, -1.0f, 0.0f), r, col); 
 	//CastFloor(createPlaneFromPointNormal(up_vec, vec3(0.0f, 10.0f, 0.0f)), r, col);// vec4(0.0f, 0.0f, 1.0f, 10.0f), r, col);
 
 	// Hit Sky
@@ -74,7 +85,7 @@ void Raycast(ImageData &output, int pass_break /*= 1*/, bool border /*= true*/) 
   
   int c = 0;
   for (int y = output.height - 1; y >= 0; --y) {
-    float v = y * invHeight;
+    float v = (output.height - y) * invHeight;
     for (int x = output.width - 1; x >= 0; --x) {
 		if ((pass_break > 1) && ((rand() % pass_break) != 0)) {
 			c += 3;
