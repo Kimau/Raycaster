@@ -12,6 +12,18 @@ GLuint g_testTexVertexArrays;
 ImageData g_imgTest = ImageData("test");
 ImageData g_rayresult;
 
+raycast_state always = {
+	10,
+	false,
+	1
+};
+
+raycast_state single_shot = {
+	0,
+	true,
+	10
+};
+
 /////////////////////
 
 bool loadBasicColorProgram() {
@@ -245,10 +257,14 @@ void render(SDL_Window *window) {
         (g_rayresult.height != ray_height))
       g_rayresult.BlankImage(ray_width, ray_height);
 
-	if(g_always_cast)
-		Raycast(g_rayresult, 10, false);
-	else 
-		Raycast(g_rayresult);
+	if (g_always_cast) {
+		always.cam = ray3(g_campos, g_camdir.getNormalized());
+		Raycast(g_rayresult, always);
+	}
+	else {
+		single_shot.cam = ray3(g_campos, g_camdir.getNormalized());
+		Raycast(g_rayresult, single_shot);
+	}
 
     g_rayresult.CopyToGPU();
     g_request_brute_ray = false;

@@ -13,7 +13,7 @@ struct quat;
 struct vec2;
 struct vec3;
 struct vec4;
-struct ray;
+struct ray3;
 
 typedef vec2 CTexCoord;
 typedef vec4 CSphere;

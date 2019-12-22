@@ -92,7 +92,7 @@ void init_world() {
 	solids.push_back(solidhit::create_skysphere(vec4(0.0f, 0.0f, 0.0f, 1000.0f), c, 2));
 }
 
-bool hit_sphere(const ray& r, const solidhit& tar, hit_record* hit_data) {
+bool hit_sphere(const ray3& r, const solidhit& tar, hit_record* hit_data) {
 	vec3 oc = r.origin() - tar.v.xyz();
 	const float oc_mag_sq = oc.SqrdMag();
 	if (oc_mag_sq < (tar.v.w*tar.v.w)) {
@@ -121,7 +121,7 @@ bool hit_sphere(const ray& r, const solidhit& tar, hit_record* hit_data) {
 	return true;
 }
 
-bool hit_plane(const ray& r, const solidhit& tar, hit_record* hit_data) {
+bool hit_plane(const ray3& r, const solidhit& tar, hit_record* hit_data) {
 	const vec3 pnorm = tar.v.xyz();
 	float denom = pnorm.Dot(r.dir());
 
@@ -143,7 +143,7 @@ bool hit_plane(const ray& r, const solidhit& tar, hit_record* hit_data) {
 }
 
 
-bool hit_disc(const ray& r, const solidhit& tar, hit_record* hit_data) {
+bool hit_disc(const ray3& r, const solidhit& tar, hit_record* hit_data) {
 	const vec3 pnorm = tar.v.xyz();
 	float denom = pnorm.Dot(r.dir());
 
@@ -170,7 +170,7 @@ bool hit_disc(const ray& r, const solidhit& tar, hit_record* hit_data) {
 	return true;
 }
 
-bool hit(const ray& r, const solidhit& tar, hit_record* hit_data) {
+bool hit(const ray3& r, const solidhit& tar, hit_record* hit_data) {
 	switch (tar.kind) {
 	case SOLID_SKY:   return hit_sphere(r, tar, hit_data);
 	case SOLID_BALL:  return hit_sphere(r, tar, hit_data);
@@ -181,7 +181,7 @@ bool hit(const ray& r, const solidhit& tar, hit_record* hit_data) {
 	return false;
 }
 
-vec3 color(const ray& r) {
+vec3 color(const ray3& r) {
 	hit_record best_hit = {
 		FLT_MAX,
 		vec3(0.0f, 0.0f, 0.0f),
@@ -226,37 +226,54 @@ vec3 color(const ray& r) {
 	}
 }
 
-void Raycast(ImageData &output, int pass_break /*= 1*/, bool border /*= true*/) {
+inline float random_float() {
+	return float(rand()) / float(RAND_MAX + 1.0f);
+}
+
+void Raycast(ImageData &output, const raycast_state& s) {
 
   const float invWidth = 1.0f / float(output.width);
   const float invHeight = 1.0f / float(output.height);
   const float ratio = float(output.width) / float(output.height);
   const int limit = output.width * output.height * 3;
 
-  const ray cam(g_campos, g_camdir.getNormalized());
-  const vec3 up(0.0f, 0.0f, 1.0f);
-  const vec3 perp = up * cam.dir();
+  const float inv_ns = 1.0f / float(s.num_samples);
+  const vec3 perp = s.up * s.cam.dir();
 
+  // Fake Animating world Bullshit which should be in update
   if (solids.empty()) {
 	  init_world();
   }
   solids[0].v.w = 0.25f + (sinf(g_walltime * 0.001f) + 1.0f) * 1.0f;
   solids[2].v.z = sinf(g_walltime * 0.001f) * 2.0f;
   
+  
   int c = 0;
   for (int y = output.height - 1; y >= 0; --y) {
     float v = (output.height - y) * invHeight;
     for (int x = output.width - 1; x >= 0; --x) {
-		if ((pass_break > 1) && ((rand() % pass_break) != 0)) {
+		if ((s.pass_break > 1) && ((rand() % s.pass_break) != 0)) {
 			c += 3;
 			continue;
 		}
 
       float u = x * invWidth;
-	  ray ray(cam.origin(), cam.dir() + up * (v - 0.5f) + perp * (u - 0.5f) * ratio);
-	  ray.b.Normalize();
+	  vec3 col(0.0f, 0.0f, 0.0f);
+	  ray3 r(s.cam.origin(), s.cam.dir() + s.up * (v - 0.5f) + perp * (u - 0.5f) * ratio);
+	  r.b.Normalize();
 
-	  vec3 col = color(ray);
+	  if (s.num_samples > 1) {
+		  for (int n = 0; n < s.num_samples; ++n) {
+			  col += color(ray3(r.a, r.b
+				  + s.up * ((random_float()*0.8f - 0.4f)*invHeight)
+				  + perp * ((random_float()*0.8f - 0.4f)*invWidth)));
+		  }
+
+		  col *= inv_ns;
+	  }
+	  else {
+		  col = color(r);
+	  }
 
       output.imgData[c++] = char(255 * col.x);
       output.imgData[c++] = char(255 * col.y);
@@ -266,7 +283,7 @@ void Raycast(ImageData &output, int pass_break /*= 1*/, bool border /*= true*/) 
 
   assert(c <= limit);
 
-  if (border) {
+  if (s.border) {
 	  c = (0 * output.width * 3);
 	  for (int x = output.width - 1; x >= 0; --x) {
 		  output.imgData[c++] = char(0);

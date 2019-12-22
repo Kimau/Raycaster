@@ -13,7 +13,17 @@ bool handleInput(SDL_Event event);
 void render(SDL_Window *window);
 
 //
-void Raycast(ImageData &output, int pass_break = 1, bool border = true);
+struct raycast_state {
+	int pass_break = 1;
+	bool border = true;
+
+	int num_samples = 3;
+
+	ray3 cam;
+	vec3 up = vec3(0.0f, 0.0f, 1.0f);
+};
+
+void Raycast(ImageData &output, const raycast_state& state);
 
 //
 extern bool g_imguiShowTestWindow;
