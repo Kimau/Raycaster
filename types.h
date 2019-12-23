@@ -24,3 +24,6 @@ typedef vec3 CNorm;
 #define PI 3.141592654f // Simpler PI
 #define DEG_TO_RAD 0.017453292519943f
 #define RAD_TO_DEG 57.295779513f
+
+// void DebugLog(const char *fmt, ...);
+#define DebugLog SDL_Log

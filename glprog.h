@@ -1,10 +1,15 @@
 #pragma once
 
 #include <GL/gl3w.h>
+#include "core.h"
 #include <vector>
 
 #define PD_BASIC_TEX (0)
 #define PD_BASIC_RED (1)
+#define PD_COMPUTE_TEST   (2)
+
+
+bool glCheckError(const char* prefix);
 
 struct ShaderUniform {
   GLint loc;

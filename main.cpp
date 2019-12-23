@@ -4,6 +4,7 @@
 
 #include "core.h"
 #include <deque>
+#include "stdarg.h"
 
 #include "glprog.h"
 #include "gltex.h"
@@ -23,7 +24,7 @@ void AppLoop(SDL_Window *window) {
 
   // Main loop
   uint32_t lastTick = SDL_GetTicks() + SCREEN_TICKS_PER_FRAME;
-  printf("\n------------- LOOOP STARTED --------------- %d \n", lastTick);
+  DebugLog("\n------------- LOOOP STARTED --------------- %d \n", lastTick);
 
   while (true) {
     SDL_Event event;
@@ -53,6 +54,9 @@ void AppLoop(SDL_Window *window) {
 }
 
 bool glinit(); // glrender.cpp
+void APIENTRY openglDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, void* userParam) {
+	DebugLog("%d %s\n", severity, message);
+}
 
 // Main
 int main(int, char **) {
@@ -61,7 +65,7 @@ int main(int, char **) {
 
   // Setup SDL
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
-    printf("Error: %s\n", SDL_GetError());
+    DebugLog("Error: %s\n", SDL_GetError());
     return -1;
   }
 
@@ -72,8 +76,14 @@ int main(int, char **) {
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+  if ((SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4) + SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3)) != 0) {
+	  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+  }
+#ifdef DEBUG_OPENGL
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS,SDL_GL_CONTEXT_DEBUG_FLAG);
+#endif
+
   SDL_DisplayMode current;
   SDL_GetCurrentDisplayMode(0, &current);
   SDL_Window *window = SDL_CreateWindow(
@@ -88,7 +98,7 @@ int main(int, char **) {
   int versionMagor, versionMinor;
   glGetIntegerv(GL_MAJOR_VERSION, &versionMagor);
   glGetIntegerv(GL_MINOR_VERSION, &versionMinor);
-  printf("Version %d.%d - %s\n", versionMagor, versionMinor,
+  DebugLog("Version %d.%d - %s\n", versionMagor, versionMinor,
          glGetString(GL_VENDOR));
 
   // Load Fonts
@@ -103,6 +113,12 @@ int main(int, char **) {
   // io.Fonts->AddFontFromFileTTF("../../extra_fonts/ProggyTiny.ttf", 10.0f);
   // io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f,
   // NULL, io.Fonts->GetGlyphRangesJapanese());
+
+#ifdef DEBUG_OPENGL
+  glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+  glDebugMessageCallback(openglDebugCallback, NULL);
+  glEnable(GL_DEBUG_OUTPUT);
+#endif // DEBUG_OPENGL
 
   if (false == glinit())
     goto Label_Shutdown;
@@ -119,3 +135,12 @@ Label_Shutdown:
 
   return 0;
 }
+
+/*
+void DebugLog(const char *fmt, ...) {
+	va_list args;
+	va_start(args, fmt);
+	vfprintf(stderr, fmt, args);
+	va_end(args);
+}
+*/

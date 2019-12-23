@@ -21,5 +21,6 @@ std::vector<u8> ReadFileToBuffer(const char *filename) {
   bool success = (fread(&ttf_buffer[0], 1, ttf_buffer.size(), pFile) == lSize);
   fclose(pFile);
 
+  ttf_buffer.push_back(0);
   return ttf_buffer;
 }

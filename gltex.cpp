@@ -66,7 +66,7 @@ bool ImageData::CopyToGPU() {
 
   int e = glGetError();
   if (e != GL_NO_ERROR) {
-    printf("\n BindGLTex %s Setup Error %04X \n", name, e);
+    DebugLog("\n BindGLTex %s Setup Error %04X \n", name, e);
     return false;
   }
 
@@ -74,7 +74,7 @@ bool ImageData::CopyToGPU() {
 
   e = glGetError();
   if (e != GL_NO_ERROR) {
-    printf("\n BindGLTex %s Data Error %04X \n %dx%d %d", name, e, width,
+    DebugLog("\n BindGLTex %s Data Error %04X \n %dx%d %d", name, e, width,
            height, imgType);
     return false;
   }

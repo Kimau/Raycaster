@@ -4,6 +4,7 @@
 #include "glprog.h"
 #include "gltex.h"
 #include "math/Cvector2.h"
+#include "filesys.h"
 
 #include <stdio.h>
 
@@ -26,31 +27,30 @@ raycast_state single_shot = {
 
 /////////////////////
 
+bool loadTestComputeProgram() {
+	ProgramData *prog = ProgramData::GetProg(PD_COMPUTE_TEST);
+	std::vector<u8> buf = ReadFileToBuffer("..\\shaders\\compute_test.glsl");
+
+	prog->create();
+	prog->compileAttachShader((const char*)&buf[0], GL_COMPUTE_SHADER);
+	prog->setupUniform("destTex");
+	prog->setupUniform("roll");
+	if (prog->link() == false)
+		return false;
+
+	glCheckError("Compute shader");
+	return true;
+}
+
 bool loadBasicColorProgram() {
   ProgramData *prog = ProgramData::GetProg(PD_BASIC_RED);
 
-  const GLchar *vertexSource = "#version 330\n"
-                               "in vec4 Position;\n"
-                               "in vec4 Color;\n"
-                               "out vec4 Frag_Color;\n"
-                               "uniform mat4 ProjMtx;\n"
-                               "void main()\n"
-                               "{\n"
-                               "	Frag_Color = Color;\n"
-                               "	gl_Position = ProjMtx * Position;\n"
-                               "}\n";
-
-  const GLchar *fragmentSource = "#version 330\n"
-                                 "in vec4 Frag_Color;\n"
-                                 "out vec4 Out_Color;\n"
-                                 "void main()\n"
-                                 "{\n"
-                                 "	Out_Color = Frag_Color; \n"
-                                 "}\n";
+  std::vector<u8> src_frag = ReadFileToBuffer("..\\shaders\\basic_col_frag.glsl");
+  std::vector<u8> src_vert = ReadFileToBuffer("..\\shaders\\basic_col_vert.glsl");
 
   prog->create();
-  prog->compileAttachShader(vertexSource, GL_VERTEX_SHADER);
-  prog->compileAttachShader(fragmentSource, GL_FRAGMENT_SHADER);
+  prog->compileAttachShader((const char*)&src_vert[0], GL_VERTEX_SHADER);
+  prog->compileAttachShader((const char*)&src_frag[0], GL_FRAGMENT_SHADER);
   prog->setupAttrib("Position");
   prog->setupAttrib("Color");
   prog->setupUniform("ProjMtx");
@@ -78,34 +78,13 @@ bool loadBasicColorProgram() {
 bool loadBasicTexProgram() {
   ProgramData *prog = ProgramData::GetProg(PD_BASIC_TEX);
 
-  const GLchar *vertexSource = "#version 330\n"
-                               "in vec4 Position;\n"
-                               "in vec4 Color;\n"
-                               "in vec2 TexCoords;\n"
-                               "out vec4 Frag_Color;\n"
-                               "out vec2 Tex_UV;\n"
-                               "uniform mat4 ProjMtx;\n"
-                               "void main()\n"
-                               "{\n"
-                               "	Frag_Color = Color;\n"
-                               "	Tex_UV = TexCoords;\n"
-                               "	gl_Position = ProjMtx * Position;\n"
-                               "}\n";
-
-  const GLchar *fragmentSource =
-      "#version 330\n"
-      "uniform sampler2D LTextureUnit;\n"
-      "in vec4 Frag_Color;\n"
-      "in vec2 Tex_UV;\n"
-      "out vec4 Out_Color;\n"
-      "void main()\n"
-      "{\n"
-      "	Out_Color = texture( LTextureUnit, Tex_UV ) * Frag_Color; \n"
-      "}\n";
+  std::vector<u8> src_frag = ReadFileToBuffer("..\\shaders\\basic_tex_frag.glsl");
+  std::vector<u8> src_vert = ReadFileToBuffer("..\\shaders\\basic_tex_vert.glsl");
 
   prog->create();
-  prog->compileAttachShader(vertexSource, GL_VERTEX_SHADER);
-  prog->compileAttachShader(fragmentSource, GL_FRAGMENT_SHADER);
+  prog->compileAttachShader((const char*)&src_vert[0], GL_VERTEX_SHADER);
+  prog->compileAttachShader((const char*)&src_frag[0], GL_FRAGMENT_SHADER);
+
   prog->setupAttrib("Position");
   prog->setupAttrib("Color");
   prog->setupAttrib("TexCoords");
@@ -149,34 +128,34 @@ bool loadBasicTexProgram() {
   glBindVertexArray(0);
   return true;
 }
+
 /////////////////////
 
 bool glinit() {
   if (loadBasicColorProgram() == false) {
-    printf("\n\nBasic Colour Prog\nError %08X\n", glGetError());
+    DebugLog("\n\nBasic Colour Prog\nError %08X\n", glGetError());
     return false;
   }
 
   if (loadBasicTexProgram() == false) {
-    printf("\n\nBasic Tex Prog\nError %08X\n", glGetError());
+    DebugLog("\n\nBasic Tex Prog\nError %08X\n", glGetError());
     return false;
   }
 
-  printf("GL CHECK Error %08X\n", glGetError());
+  if (loadTestComputeProgram() == false) {
+	  DebugLog("\n\nTest Compute Program\nError %08X\n", glGetError());
+	  return false;
+  }
+
+  glCheckError("Init");
 
   g_imgTest.LoadFromFile("./img/test.png");
   if (g_imgTest.CopyToGPU() == false) {
     return false;
   }
 
-  // Check for GL Errors
-  int x = glGetError();
-  if (x != GL_NO_ERROR) {
-    printf("\nError %08X\n", x);
-    return false;
-  }
+  return glCheckError("CopyGPU");
 
-  return true;
 }
 
 bool setupOrthViewport(int width, int height) { return false; }
@@ -243,6 +222,19 @@ void render(SDL_Window *window) {
     glDrawArrays(GL_TRIANGLES, 0, 6);
   }
 
+  // Compute Test 
+  {
+	  ProgramData *prog = ProgramData::GetProg(PD_COMPUTE_TEST);
+	  prog->bind();
+
+
+	  for (int i = 0; i < 1024; ++i) {
+		  prog->uniformList[1].SetF((float)i*0.01f);
+		  glDispatchCompute(512 / 16, 512 / 16, 1); // 512^2 threads in blocks of 16^2
+		  glCheckError("Dispatch compute shader");
+	  }
+  }
+
   // Clean Up
   glBindVertexArray(NULL);
   glUseProgram(NULL);
@@ -250,6 +242,8 @@ void render(SDL_Window *window) {
   //
   ImGui::Render();
   SDL_GL_SwapWindow(window);
+
+  glCheckError("Render");
 
   // Post Render Bullshit
   if (g_request_brute_ray) {
@@ -275,7 +269,7 @@ void render(SDL_Window *window) {
 
 	  char filename[255] = { 0 };
 	  
-	  sprintf(filename, "ray_%llu.png", g_walltime);
+	  snprintf(filename, 255, "ray_%llu.png", g_walltime);
 	  g_rayresult.SaveFile(filename);
   }
 }

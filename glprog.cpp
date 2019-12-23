@@ -42,32 +42,26 @@ bool ProgramData::link() {
   glLinkProgram(progID);
   glGetProgramiv(progID, GL_LINK_STATUS, &programSuccess);
   if (programSuccess != GL_TRUE) {
-    printf("Error linking program %d!\n", progID);
+	  DebugLog("Error linking program %d!\n", progID);
     printProgramLog(progID);
     return false;
   }
 
   for (int i = 0; i < uniformList.size(); ++i) {
     if (uniformList[i].PostLink(progID) == false) {
-      printf("Invalid Uniform: %s", uniformList[i].name);
+		DebugLog("Invalid Uniform: %s", uniformList[i].name);
       return false;
     }
   }
   for (int i = 0; i < attribList.size(); ++i) {
     if (attribList[i].PostLink(progID) == false) {
-      printf("Invalid Attrib: %s", attribList[i].name);
+		DebugLog("Invalid Attrib: %s", attribList[i].name);
       return false;
     }
   }
 
-  int e = glGetError();
-  if (e != GL_NO_ERROR) {
-    printf("Program Link Error: %04X", e);
-    return false;
-  }
-
-  isValid = true;
-  return true;
+  isValid = glCheckError("Program Link Error");
+  return isValid;
 }
 
 bool ProgramData::bind() {
@@ -76,15 +70,7 @@ bool ProgramData::bind() {
 
   glUseProgram(progID);
 
-  // Check for error
-  GLenum error = glGetError();
-  if (error != GL_NO_ERROR) {
-    printf("Error binding program! %x\n", error);
-    printProgramLog(progID);
-    return false;
-  }
-
-  return true;
+  return glCheckError("Program Bind");
 }
 
 ProgramData g_progArray[10];
@@ -110,7 +96,7 @@ GLuint compileShader(const GLchar *source, GLenum type) {
   GLint vShaderCompiled = GL_FALSE;
   glGetShaderiv(shader, GL_COMPILE_STATUS, &vShaderCompiled);
   if (vShaderCompiled != GL_TRUE) {
-    printf("Unable to compile shader %d!\n", shader);
+    DebugLog("Unable to compile shader %d!\n", shader);
     printShaderLog(shader);
     return NULL;
   }
@@ -134,13 +120,13 @@ void printProgramLog(GLuint program) {
     glGetProgramInfoLog(program, maxLength, &infoLogLength, infoLog);
     if (infoLogLength > 0) {
       // Print Log
-      printf("%s\n", infoLog);
+      DebugLog("%s\n", infoLog);
     }
 
     // Deallocate string
     delete[] infoLog;
   } else {
-    printf("Name %d is not a program\n", program);
+    DebugLog("Name %d is not a program\n", program);
   }
 }
 
@@ -161,13 +147,13 @@ void printShaderLog(GLuint shader) {
     glGetShaderInfoLog(shader, maxLength, &infoLogLength, infoLog);
     if (infoLogLength > 0) {
       // Print Log
-      printf("%s\n", infoLog);
+      DebugLog("%s\n", infoLog);
     }
 
     // Deallocate string
     delete[] infoLog;
   } else {
-    printf("Name %d is not a shader\n", shader);
+    DebugLog("Name %d is not a shader\n", shader);
   }
 }
 
@@ -247,4 +233,18 @@ void genBasicFloatNBuffer(GLuint index, ShaderAttrib &attrib, GLfloat *vertData,
 
   attrib.DisableArray();
   glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+
+
+bool glCheckError(const char* prefix)
+{
+	// Check for GL Errors
+	int x = glGetError();
+	if (x != GL_NO_ERROR) {
+		DebugLog("\n%s Error %08X\n", prefix, x);
+		return false;
+	}
+
+	return true;
 }
