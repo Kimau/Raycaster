@@ -18,4 +18,7 @@ vec4 createPlaneFromPoints(const vec3& a, const vec3& b, const vec3& c);
 vec4 createPlaneFromPointNormal(const vec3& pt, const vec3& norm);
 float distanceFromPlane(const vec3& pt, const vec4& plane);
 
-
+vec2 poissonDisc8(int i);
+vec3 poissonSphere8(int i);
+vec2 poissonDisc50(int i);
+vec3 poissonSphere50(int i);

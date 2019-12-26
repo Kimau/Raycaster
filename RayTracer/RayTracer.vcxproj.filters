@@ -75,8 +75,11 @@
     <ClCompile Include="..\math\Cvector4.cpp">
       <Filter>Math</Filter>
     </ClCompile>
+    <ClCompile Include="..\math\CRay.cpp">
+      <Filter>Math</Filter>
+    </ClCompile>
     <ClCompile Include="..\math\algebra.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Math</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

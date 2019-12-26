@@ -3,17 +3,30 @@
 #include <time.h>
 
 bool g_imguiShowTestWindow = false;
-bool g_always_cast = true; 
-bool g_request_brute_ray = false;
 bool g_request_save_file = false;
 ImVec4 g_clearColour = ImColor(114, 144, 154);
 vec2 g_lastclick = vec2(SCREEN_WIDTH * 0.5f, SCREEN_HEIGHT * 0.5f);
-vec3 g_camdir = vec3(0.0f, 1.0f, 0.0f);
-vec3 g_campos = vec3(0.0f, 0.0f, 2.0f);
-vec2 g_ray_scale = vec2(SCREEN_WIDTH * 0.4f, SCREEN_HEIGHT * 0.4f);
 
 u64 g_walltime = 0;
 u64 g_starttime = 0;
+u64 g_ticks_since_start = 0;
+
+RenderType g_render_state_index = RS_ALWAYS;
+raycast_state g_render_states[NOOF_RENDER_STATES] = {
+	{
+		10,
+		5,
+		false,
+		false
+	},
+
+{
+	0,
+	100,
+	true,
+	false
+}
+};
 
 float g_drawtest[4][4] = {{2.0f / SCREEN_WIDTH, 0, 0, 0},
                           {0.0f, 2.0f / SCREEN_HEIGHT, 0, 0},
@@ -22,6 +35,7 @@ float g_drawtest[4][4] = {{2.0f / SCREEN_WIDTH, 0, 0, 0},
 
 // Process Events
 bool handleInput(SDL_Event event) {
+	raycast_state& rs = g_render_states[g_render_state_index];
 
   if (ImGui_ImplSdlGL3_ProcessEvent(&event))
     return false;
@@ -41,17 +55,17 @@ bool handleInput(SDL_Event event) {
 
   case SDL_KEYDOWN:
 	  switch (event.key.keysym.sym) {
-		  case SDLK_w: g_campos += g_camdir * 0.1f; break;
-		  case SDLK_s: g_campos -= g_camdir * 0.1f; break;
-		  case SDLK_a: g_campos -= g_camdir * up_vec * 0.1f; break;
-		  case SDLK_d: g_campos += g_camdir * up_vec * 0.1f; break;
-		  case SDLK_q: g_campos += up_vec * 0.1f; break;
-		  case SDLK_e: g_campos -= up_vec * 0.1f; break;
+		  case SDLK_w: rs.cam.a += rs.cam.b * 0.1f; break;
+		  case SDLK_s: rs.cam.a -= rs.cam.b * 0.1f; break;
+		  case SDLK_a: rs.cam.a -= rs.cam.b * up_vec * 0.1f; break;
+		  case SDLK_d: rs.cam.a += rs.cam.b * up_vec * 0.1f; break;
+		  case SDLK_q: rs.cam.a += up_vec * 0.1f; break;
+		  case SDLK_e: rs.cam.a -= up_vec * 0.1f; break;
 
-		  case SDLK_LEFT:  g_camdir = g_camdir.RotateZ(-5.0f); break;
-		  case SDLK_RIGHT: g_camdir = g_camdir.RotateZ(+5.0f); break;
-		  case SDLK_UP:    g_camdir = g_camdir.Rotate(-5.0f, g_camdir * up_vec); break;
-		  case SDLK_DOWN:  g_camdir = g_camdir.Rotate(+5.0f, g_camdir * up_vec); break;
+		  case SDLK_LEFT:  rs.cam.b = rs.cam.b.RotateZ(-5.0f); break;
+		  case SDLK_RIGHT: rs.cam.b = rs.cam.b.RotateZ(+5.0f); break;
+		  case SDLK_UP:    rs.cam.b = rs.cam.b.Rotate(-5.0f, rs.cam.b * up_vec); break;
+		  case SDLK_DOWN:  rs.cam.b = rs.cam.b.Rotate(+5.0f, rs.cam.b * up_vec); break;
 	  } break;
 
   case SDL_KEYUP:
@@ -69,8 +83,13 @@ bool handleInput(SDL_Event event) {
   return false;
 }
 
+void init() {
+
+}
+
 void update() {
-	g_walltime = SDL_GetTicks();
+	time((time_t*)&g_walltime);
+	g_ticks_since_start = SDL_GetTicks();
 
   if (ImGui::Begin("Debug Tools")) {
     ImGui::Text("Window Hover %d", ImGui::IsMouseHoveringAnyWindow());
@@ -78,45 +97,68 @@ void update() {
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
                 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
-	ImGui::DragFloat3("camdir", &g_camdir.x, 0.1f);
-	ImGui::DragFloat3("campos", &g_campos.x, 0.1f);
 
-    if (ImGui::BeginMenu("Test Matrix")) {
-      if (ImGui::Button("Reset")) {
-        g_drawtest[0][0] = 2.0f / SCREEN_WIDTH;
-        g_drawtest[0][1] = 0;
-        g_drawtest[0][2] = 0;
-        g_drawtest[0][3] = 0;
-        g_drawtest[1][0] = 0;
-        g_drawtest[1][1] = 2.0f / SCREEN_HEIGHT;
-        g_drawtest[1][2] = 0;
-        g_drawtest[1][3] = 0;
-        g_drawtest[2][0] = 0;
-        g_drawtest[2][1] = 0;
-        g_drawtest[2][2] = -1.0f;
-        g_drawtest[2][3] = 0;
-        g_drawtest[3][0] = 0;
-        g_drawtest[3][1] = 0;
-        g_drawtest[3][2] = 0;
-        g_drawtest[3][3] = 1.0f;
-      }
+	if (ImGui::BeginMenu("Test Matrix")) {
+		if (ImGui::Button("Reset")) {
+			g_drawtest[0][0] = 2.0f / SCREEN_WIDTH;
+			g_drawtest[0][1] = 0;
+			g_drawtest[0][2] = 0;
+			g_drawtest[0][3] = 0;
+			g_drawtest[1][0] = 0;
+			g_drawtest[1][1] = 2.0f / SCREEN_HEIGHT;
+			g_drawtest[1][2] = 0;
+			g_drawtest[1][3] = 0;
+			g_drawtest[2][0] = 0;
+			g_drawtest[2][1] = 0;
+			g_drawtest[2][2] = -1.0f;
+			g_drawtest[2][3] = 0;
+			g_drawtest[3][0] = 0;
+			g_drawtest[3][1] = 0;
+			g_drawtest[3][2] = 0;
+			g_drawtest[3][3] = 1.0f;
+		}
 
-      ImGui::DragFloat4("_1", &g_drawtest[0][0], 0.01f);
-      ImGui::DragFloat4("_2", &g_drawtest[1][0], 0.01f);
-      ImGui::DragFloat4("_3", &g_drawtest[2][0], 0.01f);
-      ImGui::DragFloat4("_4", &g_drawtest[3][0], 0.01f);
+		ImGui::DragFloat4("_1", &g_drawtest[0][0], 0.01f);
+		ImGui::DragFloat4("_2", &g_drawtest[1][0], 0.01f);
+		ImGui::DragFloat4("_3", &g_drawtest[2][0], 0.01f);
+		ImGui::DragFloat4("_4", &g_drawtest[3][0], 0.01f);
 
-      ImGui::EndMenu();
-    }
+		ImGui::EndMenu();
+	}
+	ImGui::Separator();
+	{
 
-	ImGui::SliderFloat2("Ray Scale", &g_ray_scale.x, 64.0f, 1024.0f, "%.0f");
+		const char* names[2] = {
+			"Always",
+			"Single Shot"
+		};
 
-	ImGui::Checkbox("always_cast", &g_always_cast);
-	if(g_always_cast) g_request_brute_ray = true;
+		RenderType old_state = g_render_state_index;
+		if (ImGui::ListBox("", (int*)&g_render_state_index, names, NOOF_RENDER_STATES)) {
+			g_render_states[g_render_state_index].cam = g_render_states[old_state].cam; // Copy from old state
+		}
 
-    if ((g_request_brute_ray == false) &&
-        (ImGui::Button("Brute Force Raycast")))
-      g_request_brute_ray = true;
+		raycast_state& rs = g_render_states[g_render_state_index];
+		switch (g_render_state_index) {
+		case RS_ALWAYS:
+			rs.want_draw = true;
+			break;
+		case RS_SINGLE_SHOT:
+			rs.want_draw = false;
+			break;
+		}
+
+		{
+			if (false == rs.want_draw)
+				rs.want_draw = ImGui::Button("Redraw");
+
+			ImGui::DragFloat3("Pos", &rs.cam.a.x, 0.1f);
+			ImGui::DragFloat3("Dir", &rs.cam.b.x, 0.1f);
+			ImGui::SliderFloat2("Scale", &rs.ray_scale.x, 64.0f, 1024.0f, "%.0f");
+			ImGui::SliderInt("Samples", &rs.num_samples, 1, 30);
+		}
+	}
+	ImGui::Separator();
 
 	if (ImGui::Button("Save File"))
 		g_request_save_file = true;

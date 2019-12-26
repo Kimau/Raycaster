@@ -144,6 +144,7 @@
     <ClCompile Include="..\main.cpp" />
     <ClCompile Include="..\math\algebra.cpp" />
     <ClCompile Include="..\math\CQuaternion.cpp" />
+    <ClCompile Include="..\math\CRay.cpp" />
     <ClCompile Include="..\math\Cvector2.cpp" />
     <ClCompile Include="..\math\CVector3.cpp" />
     <ClCompile Include="..\math\Cvector4.cpp" />

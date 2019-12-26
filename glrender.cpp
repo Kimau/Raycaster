@@ -13,18 +13,6 @@ GLuint g_testTexVertexArrays;
 ImageData g_imgTest = ImageData("test");
 ImageData g_rayresult;
 
-raycast_state always = {
-	10,
-	false,
-	1
-};
-
-raycast_state single_shot = {
-	0,
-	true,
-	10
-};
-
 /////////////////////
 
 bool loadTestComputeProgram() {
@@ -162,10 +150,12 @@ bool setupOrthViewport(int width, int height) { return false; }
 
 // Render
 void render(SDL_Window *window) {
+	raycast_state& rs = g_render_states[g_render_state_index];
+
   // Setup Render State
   glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-  const int ray_width = int(g_ray_scale.x / 32.0f) * 32;
-  const int ray_height = int(g_ray_scale.y / 32.0f) * 32;
+  const int ray_width = int(rs.ray_scale.x / 32.0f) * 32;
+  const int ray_height = int(rs.ray_scale.y / 32.0f) * 32;
 
   const float screen_ratio = float(SCREEN_WIDTH) / float(SCREEN_HEIGHT);
   const float ray_ratio = float(ray_width) / float(ray_height);
@@ -246,22 +236,15 @@ void render(SDL_Window *window) {
   glCheckError("Render");
 
   // Post Render Bullshit
-  if (g_request_brute_ray) {
+  if (rs.want_draw) {
     if ((false == g_rayresult.loaded) || (g_rayresult.width != ray_width) ||
         (g_rayresult.height != ray_height))
       g_rayresult.BlankImage(ray_width, ray_height);
 
-	if (g_always_cast) {
-		always.cam = ray3(g_campos, g_camdir.getNormalized());
-		Raycast(g_rayresult, always);
-	}
-	else {
-		single_shot.cam = ray3(g_campos, g_camdir.getNormalized());
-		Raycast(g_rayresult, single_shot);
-	}
-
+	Raycast(g_rayresult, rs);
     g_rayresult.CopyToGPU();
-    g_request_brute_ray = false;
+
+	rs.want_draw = false;
   }
 
   if (g_request_save_file) {

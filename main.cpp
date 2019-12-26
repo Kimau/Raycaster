@@ -5,6 +5,7 @@
 #include "core.h"
 #include <deque>
 #include "stdarg.h"
+#include <time.h>
 
 #include "glprog.h"
 #include "gltex.h"
@@ -19,13 +20,11 @@ int SCREEN_TICKS_PER_FRAME = 1000 / SCREEN_FPS;
 const char *SCREEN_TITLE = "Raycaster - Brute Force - GL";
 
 void AppLoop(SDL_Window *window) {
-
-	g_starttime = g_walltime = SDL_GetTicks();
-
   // Main loop
   uint32_t lastTick = SDL_GetTicks() + SCREEN_TICKS_PER_FRAME;
   DebugLog("\n------------- LOOOP STARTED --------------- %d \n", lastTick);
 
+  init();
   while (true) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -62,6 +61,9 @@ void APIENTRY openglDebugCallback(GLenum source, GLenum type, GLuint id, GLenum 
 int main(int, char **) {
   FILE *my_stdout;
   freopen_s(&my_stdout, "my_stdout.txt", "wt", stdout);
+
+  time((time_t*)&g_walltime);
+  g_starttime = g_walltime;
 
   // Setup SDL
   if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
