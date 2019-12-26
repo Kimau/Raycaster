@@ -38,10 +38,14 @@ public:
 
   //	Functions
   void Normalize();
-  void Invert();
+  inline void Invert() {
+	  x = -x;
+	  y = -y;
+	  z = -z;
+  }
 
   //	Accesors
-  vec2 xy() const { return vec2(x, y); }
+  inline vec2 xy() const { return vec2(x, y); }
   vec3 getNormalized() const;
   vec3 getLongitude() const;
   vec3 getLatitude() const;
@@ -49,13 +53,36 @@ public:
   vec3 RotateY(float _degree) const;
   vec3 RotateZ(float _degree) const;
   vec3 Rotate(float _degree, const vec3& _axis) const;
+
+  inline vec3 getReflect(vec3 n) const { return (*this) - n * (2.0f * Dot(n)); }
+  inline vec3 getRefract(vec3 n) const { return (*this) + n * (2.0f * Dot(n)); }
+  inline void Reflect(vec3 n) { *this -= n * (2.0f * Dot(n)); }
+  inline void Refract(vec3 n) { *this += n * (2.0f * Dot(n)); }
+
   float Magnitude() const;
-  float SqrdMag() const;
-  float Dot(const vec3& _vector) const;
+  inline float SqrdMag() const { return x * x + y * y + z * z; }
+  inline float Dot(const vec3& _vector) const { return ((x * _vector.x) + (y * _vector.y) + (z * _vector.z)); }
   float Angle(const vec3& _vector) const;
-  float Distance(const vec3& _point, const vec3& _orig = vec3(0, 0, 0)) const;
-  float DistanceFast(const vec3& _point) const;
-  void getArray(float *_array) const;
+
+  inline float Distance(const vec3& _point, const vec3& _orig = vec3(0, 0, 0)) const {
+	  vec3 _top = ((_point - _orig) * (*this));
+	  _top /= Magnitude();
+	  return _top.Magnitude();
+  }
+
+  inline float DistanceFast(const vec3& _point) const {
+	 
+		  //	Gets the distance to the closest point on the line
+		  //	ASSUMES (this) is from Origin and length 1
+		  vec3 _top = (_point * (*this));
+		  return _top.Magnitude();
+  }
+
+  void getArray(float *_array) const {
+		  _array[0] = x;
+		  _array[1] = y;
+		  _array[2] = z;
+  }
 
   float x, y, z;
 };

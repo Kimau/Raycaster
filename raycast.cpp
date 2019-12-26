@@ -49,12 +49,14 @@ const vec3 pastel[] = {
 };
 
 // Hit System
-struct hit_record
-{
-	float t = 0.0f;
-	vec3 p;
-	vec3 n;
-	u32 hitid = 0;
+enum material_type {
+	MATERIAL_FLAT_COLOUR,
+	MATERIAL_DIFFUSE,	// rgba : [roughness,?,?,?]
+	MATERIAL_GLASS,
+	MATERIAL_SKY,
+	MATERIAL_NORMALS,
+	MATERIAL_TILES,
+	NOOF_MATERIAL_TYPES
 };
 
 enum solid_type
@@ -66,334 +68,494 @@ enum solid_type
 	NOOF_SOLID_TYPES
 };
 
-struct solidhit {
+class world;
+class hit_record;
+class material;
+class solidhit;
+
+class hit_record
+{
+public:
+	float t = 0.0f;
+	vec3 p;
+	vec3 n;
+	u32 hitid = 0;
+};
+
+class material {
+public:
+	virtual material_type get_type() = 0;
+	virtual bool colour(ray3& ray, const hit_record& hit, vec3& out_colour) = 0;
+};
+
+class mat_flat :public  material {
+public:
+	vec3 rgb;
+	mat_flat(vec3 colour) : rgb(colour) {}
+
+	inline material_type get_type() { return MATERIAL_FLAT_COLOUR; };
+	bool colour(ray3& ray, const hit_record& hit, vec3& out_colour) override {
+		out_colour = rgb;
+		return true;
+	}
+};
+
+class mat_normal :public  material {
+public:
+	mat_normal() {}
+
+	inline material_type get_type() { return MATERIAL_NORMALS; };
+	bool colour(ray3& ray, const hit_record& hit, vec3& out_colour) override {
+		out_colour = hit.n * 0.5f + vec3(0.5f, 0.5f, 0.5f);
+		return true;
+	}
+};
+
+class mat_diffuse : public material {
+public:
+	float r = 0.0f;
+	float m = 1.0f;
+
+	mat_diffuse(float roughness, float mirror) : r(roughness), m(mirror) {}
+
+	inline material_type get_type() { return MATERIAL_DIFFUSE; };
+	bool colour(ray3& ray, const hit_record& hit, vec3& out_colour) override {
+		ray.a = hit.p;
+		ray.b.Reflect(hit.n);
+
+		if (r > 0.0f)
+			ray.b += poissonSphere8(rand() % 8) * saturate(r);			
+
+		return false;
+	}
+};
+
+
+class mat_glass : public material {
+public:
+	float r = 0.0f;
+	float m = 1.0f;
+
+	mat_glass(float roughness, float mirror) : r(roughness), m(mirror) {}
+
+	inline material_type get_type() { return MATERIAL_GLASS; };
+	bool colour(ray3& ray, const hit_record& hit, vec3& out_colour) override {
+		ray.a = hit.p;
+		ray.b.Refract(hit.n);
+
+		if (r > 0.0f)
+			ray.b += poissonSphere8(rand() % 8) * saturate(r);
+
+		return false;
+	}
+};
+
+class mat_tiles : public material {
+public:
+	float r = 0.0f;
+	float m = 1.0f;
+
+	mat_tiles(float roughness, float mirror) : r(roughness), m(mirror) {}
+
+	inline material_type get_type() { return MATERIAL_DIFFUSE; };
+	bool colour(ray3& ray, const hit_record& hit, vec3& out_colour) override {
+		if ((sinf(hit.p.x) > 0) ^ (cosf(hit.p.y) > 0)) {
+			ray.a = hit.p;
+		}
+		else {
+			ray.a = hit.p;
+			ray.b.Reflect(hit.n);
+		}
+
+		if (r > 0.0f)
+			ray.b += poissonSphere8(rand() % 8) * saturate(r);
+
+		return false;
+	}
+};
+
+class mat_sky : public material {
+public:
+	vec4* cols = nullptr;
+	u16 num_cols = 0;
+	
+	mat_sky(std::vector<vec4> colours) {
+		num_cols = u16(colours.size());
+		cols = new vec4[num_cols];
+		for (u16 i = 0; i < num_cols; ++i) 
+			cols[i] = colours[i];
+	}
+	~mat_sky() {
+		delete cols;
+	}
+
+	inline material_type get_type() { return MATERIAL_SKY; };
+	bool colour(ray3& ray, const hit_record& hit, vec3& out_colour) override {
+		// Proper method
+
+
+		int i = 0;
+		while ((i < num_cols) && (cols[i].w < hit.n.z)) ++i;
+
+		if (i == 0) out_colour = cols[0].xyz();
+		else if (i >= num_cols) out_colour = cols[num_cols-1].xyz();
+		else out_colour = lerp(cols[i - 1].xyz(), cols[i].xyz(), (hit.n.z - cols[i - 1].w) / (cols[i].w - cols[i - 1].w));
+
+		return true;
+	}
+};
+
+class solidhit {
+public:
+
+	virtual bool hit(const ray3 &r, float tmin, float tmax, hit_record* hit_data) const = 0;
+	virtual u16 get_material() = 0;
+	virtual void set_material(u16 mat) = 0;
+	virtual solid_type get_type() = 0;
+};
+
+class solid_ball : public solidhit {
+public:
 	vec4 v;
-	solid_type kind = SOLID_SKY;	
-	size_t sz_extra = 0;
-	void* extra = nullptr;
+	u16 mat = 0;
 
+	solid_ball(vec4 vec) : v(vec), mat(0) {}
 
-	// Creation
-	solidhit() {}
-	solidhit(solid_type _t, vec4 _v) : v(_v), kind(_t), sz_extra(0), extra(nullptr) {}
-	solidhit(const solidhit& o) : v(o.v), kind(o.kind) {
-		set_extra(o.extra, o.sz_extra);
-	}
+	inline u16 get_material() { return mat;  }
+	inline void set_material(u16 m) { mat = m; }
+	inline solid_type get_type() { return SOLID_BALL; }
 
-	~solidhit() {
-		free_data();
-	}
+	bool hit(const ray3 &r, float tmin, float tmax, hit_record* hit_data) const  {
+		const vec3 tp = v.xyz();
+		const vec3 oc = r.origin() - tp;
+		const float oc_mag_sq = oc.SqrdMag();
+		if (oc_mag_sq < (v.w*v.w)) {
+			float t = v.w - sqrtf(oc_mag_sq);
+			if ((t < tmin) || (t > tmax)) return false;
 
-	void set_extra(void* ex, size_t sz) {
-		free_data();
-		sz_extra = sz;
-		extra = malloc(sz_extra);
-		memcpy(extra, ex, sz_extra);
-	}
+			if (hit_data != nullptr) {
+				hit_data->t = v.w - sqrtf(oc_mag_sq);
+				hit_data->p = r.PointAt(hit_data->t);
+				hit_data->n = (r.PointAt(hit_data->t) - tp) / v.w;
+			}
+			return true;
+		}
 
-	void free_data() {
-		if (extra) free(extra);
-		sz_extra = 0;
-	}
+		float a = r.dir().Dot(r.dir());
+		float b = 2.0f * oc.Dot(r.dir());
+		float c = oc.Dot(oc) - v.w*v.w;
+		float discriminant = b * b - 4.0f*a*c;
 
-	static solidhit create_ball(vec4 v) { return solidhit(SOLID_BALL, v); }
-	static solidhit create_plane(vec4 v) { return solidhit(SOLID_PLANE, v); }
-	static solidhit create_disc(vec4 v, float r);
-	static solidhit create_skysphere(vec4 v, vec4* grad, u32 num_grad) {
-		solidhit sh(SOLID_SKY, v);
-		sh.set_extra(grad, sizeof(vec4)*num_grad);
-		return sh;
-	}
-};
+		if (discriminant < 0)
+			return false;
 
-
-struct extra_disc {
-	float rad = 1.0f;
-};
-
-solidhit solidhit::create_disc(vec4 v, float r) {
-	solidhit sh(SOLID_DISC, v);
-	extra_disc ex{ r };
-	sh.set_extra(&ex, sizeof(ex));
-	return sh;
-}
-
-
-solidhit* list_solids = nullptr;
-u64 num_solids = 0;
-
-void init_world() {
-	if (list_solids != nullptr) delete list_solids;
-	list_solids = new solidhit[6];
-	num_solids = 0;
-
-	// Sky box must ALWAYS be first
-	vec4 c[] = {
-		vec4(1.0f, 1.0f, 1.0f,0.0f),
-		vec4(0.5f, 0.7f, 1.0f,0.8f)
-	};
-	list_solids[num_solids++] = solidhit::create_skysphere(vec4(0.0f, 0.0f, 0.0f, 1000.0f), c, 2);
-
-	list_solids[num_solids++] = solidhit::create_ball(vec4(-3.0f, 10.0f, 2.0f, 0.5f));
-	list_solids[num_solids++] = solidhit::create_ball(vec4( 0.0f, 10.0f, 1.0f, 0.5f));
-	list_solids[num_solids++] = solidhit::create_ball(vec4(+2.7f, 10.5f, 0.7f, 0.5f));
-	list_solids[num_solids++] = solidhit::create_ball(vec4(+2.7f, 10.5f, 1.7f, 0.5f));
-	list_solids[num_solids++] = solidhit::create_ball(vec4(+4.0f, 10.0f, 1.0f, 0.9f));
-	list_solids[num_solids++] = solidhit::create_plane(vec4(0.0f, 0.0f, 1.0f, 0.0f));
-}
-
-bool hit_sphere(const ray3& r, const solidhit& tar, float tmin = 0.0f, float tmax = FLT_MAX, hit_record* hit_data = nullptr) {
-	const vec3 tp = tar.v.xyz();
-	const vec3 oc = r.origin() - tp;
-	const float oc_mag_sq = oc.SqrdMag();
-	if (oc_mag_sq < (tar.v.w*tar.v.w)) {
-		float t = tar.v.w - sqrtf(oc_mag_sq);
+		float t = (-b - sqrtf(discriminant)) / (2.0f*a);
 		if ((t < tmin) || (t > tmax)) return false;
 
 		if (hit_data != nullptr) {
-			hit_data->t = tar.v.w - sqrtf(oc_mag_sq);
+			hit_data->t = t;
 			hit_data->p = r.PointAt(hit_data->t);
-			hit_data->n = (r.PointAt(hit_data->t) - tp) / tar.v.w;
+			hit_data->n = (r.PointAt(hit_data->t) - tp) / v.w;
 		}
+
+		return true;
+	}
+};
+
+class solid_skysphere : public solidhit {
+public:
+	float rad = 0.0f;
+	u16 mat = 0;
+
+	solid_skysphere(float radius) : rad(radius) {}
+
+	inline u16 get_material() { return mat; }
+	inline void set_material(u16 m) { mat = m; }
+	inline solid_type get_type() { return SOLID_SKY; }
+	
+	bool hit(const ray3 &r, float tmin, float tmax, hit_record* hit_data) const override {
+		if (hit_data != nullptr) {
+			const vec3 oc = r.origin();
+			float oc_mag_sq = oc.SqrdMag();
+
+			float radius = tmax + sqrtf(oc_mag_sq);
+			hit_data->p = r.PointAt(tmax);
+			hit_data->n = r.PointAt(tmax) / radius;
+			hit_data->t = tmax;
+		}
+
+		return true;
+	}
+};
+
+class  solid_plane : public solidhit {
+public:
+	vec4 v;
+	u16 mat = 0;
+
+	solid_plane(vec4 vec) : v(vec), mat(0) {}
+
+	inline u16 get_material() { return mat; }
+	inline void set_material(u16 m) { mat = m; }
+	inline solid_type get_type() { return SOLID_PLANE; }
+
+	bool hit(const ray3 &r, float tmin, float tmax, hit_record* hit_data) const override {
+		const vec3 pnorm = v.xyz();
+		float denom = pnorm.Dot(r.dir());
+
+		if (fabsf(denom) <= 0.000001f) return false;
+
+		const vec3 plane0 = pnorm * v.w;
+		const vec3 p0l0 = plane0 - r.origin();
+		const float t = p0l0.Dot(pnorm) / denom;
+
+		if ((t < tmin) || (t > tmax)) return false;
+
+		if (hit_data != nullptr) {
+			hit_data->t = t;
+			hit_data->p = r.PointAt(hit_data->t);
+			hit_data->n = pnorm;
+		}
+
+		return true;
+	}
+};
+
+class  solid_disc : public solidhit
+{
+public:
+	vec4 v;
+	float r2;
+	u16 mat = 0;
+
+	solid_disc(vec4 vec, float rad) : v(vec), r2(rad*rad), mat(0) {}
+
+	inline u16 get_material() { return mat; }
+	inline void set_material(u16 m) { mat = m; }
+	inline solid_type get_type() { return SOLID_PLANE; }
+
+
+	bool hit(const ray3 &r, float tmin, float tmax, hit_record* hit_data) const override {
+		const vec3 pnorm = v.xyz();
+		float denom = pnorm.Dot(r.dir());
+
+		if (fabsf(denom) <= 0.000001f) return false;
+
+		const vec3 plane0 = v.xyz() * v.w;
+		const vec3 p0l0 = plane0 - r.origin();
+		const float t = p0l0.Dot(pnorm) / denom;
+
+		if ((t < tmin) || (t > tmax)) return false;
+
+		const vec3 p = r.PointAt(t);
+		const float dist2 = (p - plane0).SqrdMag();
+
+		if (dist2 > r2) return false;
+
+		if (hit_data != nullptr) {
+
+			hit_data->t = t;
+			hit_data->p = p;
+			hit_data->n = pnorm;
+		}
+
 		return true;
 	}
 
-	float a = r.dir().Dot(r.dir());
-	float b = 2.0f * oc.Dot(r.dir());
-	float c = oc.Dot(oc) - tar.v.w*tar.v.w;
-	float discriminant = b * b - 4.0f*a*c;
+};
 
-	if (discriminant < 0)
-		return false;
+class world {
+public:
+	material** list_materials = nullptr;
+	solidhit** list_solids = nullptr;
+	u64 num_solids = 0;
+	u16 num_materials = 0;
 
-	float t = (-b - sqrtf(discriminant)) / (2.0f*a);
-	if ((t < tmin) || (t > tmax)) return false;
+	void free_world() {
+		if (list_materials != nullptr) {
+			for (u16 i = num_materials; i >= 0; --i)
+				if (list_materials[i]) 
+					delete list_materials[i];
 
-	if (hit_data != nullptr) {		
-		hit_data->t = t;
-		hit_data->p = r.PointAt(hit_data->t);
-		hit_data->n = (r.PointAt(hit_data->t) - tp) / tar.v.w;
-	}
-
-	return true;
-}
-
-bool hit_sky_sphere(const ray3& r, const solidhit& tar, float tmin = 0.0f, float tmax = FLT_MAX, hit_record* hit_data = nullptr) {
-	if (hit_data != nullptr) {
-		const vec3 tp = tar.v.xyz();
-		const vec3 oc = r.origin() - tp;
-		float oc_mag_sq = oc.SqrdMag();
-
-		float rad = tmax + sqrtf(oc_mag_sq);
-		hit_data->p = r.PointAt(tmax);
-		hit_data->n = (r.PointAt(tmax) - tp) / rad;
-		hit_data->t = tmax;
-	}
-
-	return true;
-}
-
-bool hit_plane(const ray3& r, const solidhit& tar, float tmin = 0.0f, float tmax = FLT_MAX, hit_record* hit_data = nullptr) {
-	const vec3 pnorm = tar.v.xyz();
-	float denom = pnorm.Dot(r.dir());
-
-	if (fabsf(denom) <= 0.000001f) return false;
-
-	const vec3 plane0 = pnorm * tar.v.w;
-	const vec3 p0l0 = plane0 - r.origin();
-	const float t = p0l0.Dot(pnorm) / denom;
-
-	if ((t < tmin) || (t > tmax)) return false;
-
-	if (hit_data != nullptr) {
-		hit_data->t = t;
-		hit_data->p = r.PointAt(hit_data->t);
-		hit_data->n = pnorm;
-	}
-
-	return true;
-}
-
-
-bool hit_disc(const ray3& r, const solidhit& tar, float tmin = 0.0f, float tmax = FLT_MAX, hit_record* hit_data = nullptr) {
-	const vec3 pnorm = tar.v.xyz();
-	float denom = pnorm.Dot(r.dir());
-
-	if (fabsf(denom) <= 0.000001f) return false;
-
-	const vec3 plane0 = tar.v.xyz() * tar.v.w;
-	const vec3 p0l0 = plane0 - r.origin();
-	const float t = p0l0.Dot(pnorm) / denom;
-
-	if ((t < tmin) || (t > tmax)) return false;
-
-	const vec3 p = r.PointAt(t);
-	const float dist2 = (p - plane0).SqrdMag();
-	const extra_disc*  disc = (extra_disc*)tar.extra;
-
-	if (dist2 > disc->rad*disc->rad) return false;
-
-	if (hit_data != nullptr) {
-
-		hit_data->t = t;
-		hit_data->p = p;
-		hit_data->n = pnorm;
-	}
-
-	return true;
-}
-
-bool hit(const ray3& r, const solidhit& tar, float tmin =0.0f, float tmax=FLT_MAX, hit_record* hit_data = nullptr) {
-	switch (tar.kind) {
-	case SOLID_SKY:   return hit_sky_sphere(r, tar, tmin, tmax, hit_data);
-	case SOLID_BALL:  return hit_sphere(r, tar, tmin, tmax, hit_data);
-	case SOLID_PLANE: return hit_plane(r, tar, tmin, tmax, hit_data);
-	case SOLID_DISC:  return hit_disc(r, tar, tmin, tmax, hit_data);
-	}
-
-	return false;
-}
-
-hit_record best_hit;
-hit_record test_hit;
-
-vec3 color(const ray3& r, float tmin, float tmax) {
-	tmax *= 0.9f; // Degrade Fast
-	best_hit.t = tmax;	
-
-	for (int i = 0; i < num_solids; ++i) {
-		if (false == hit(r, list_solids[i], tmin, best_hit.t, &test_hit))
-			continue;
-
-		if (test_hit.t > best_hit.t) continue;
-
-		best_hit = test_hit;
-		best_hit.hitid = i;
-	}
-
-	// Determine Colour
-	if (best_hit.hitid < num_solids) {
-		const solidhit& sh = list_solids[best_hit.hitid];
-
-		tmax -= (best_hit.t > tmin)?best_hit.t:tmin;
-		if ((sh.kind != SOLID_SKY) && (tmax < 0.0f)) 
-			return vec3(0.0f, 0.0f, 0.0f);
-
-		switch (sh.kind) {
-		case SOLID_BALL: {
-			const vec3& c = pastel[best_hit.hitid % num_pastels];
-
-			// Pure reflection
-			if (fabsf(best_hit.n.SqrdMag() - 1.0f) > 0.0001f)
-				best_hit.n.Normalize();
-			vec3 bounce = color(ray3(best_hit.p, best_hit.n + poissonSphere8(rand()%8) * 0.1f), tmin, tmax);
-			return bounce;
-			float b = saturate(c.Dot(bounce));
-			return lerp(bounce*b, c, b); 
-
-			// return (best_hit.n * 0.5f + vec3(0.5f, 0.5f, 0.5f)); Normal
-		}
-		case SOLID_PLANE: {
-			float shade = 0.8f;
-			if ((sinf(best_hit.p.x*PI*1.0f) > 0) != (sinf(best_hit.p.y*PI*1.0f) > 0))
-				shade = 0.6f;
-
-			if (fabsf(best_hit.n.SqrdMag() - 1.0f) > 0.0001f)
-				best_hit.n.Normalize();
-			return color(ray3(best_hit.p, best_hit.n + poissonSphere8(rand()%8) * 0.1f), tmin, tmax) * shade;
-			// return vec3(shade, shade, shade);
+			delete[] list_materials;
 		}
 
+		if (list_solids != nullptr) {
+			for (u64 i = num_solids; i >= 0; --i)
+				if (list_solids[i])
+					delete list_solids[i];
 
-		case SOLID_SKY: {
-			const vec4 a(1.0f, 1.0f, 1.0f, 0.0f);
-			const vec4 b(0.5f, 0.7f, 1.0f, 0.8f);
-			return lerp(a.xyz(), b.xyz(), saturate((best_hit.n.z - a.w) / (b.w - a.w)));
-
-			// Proper method
-			vec4* skyGrad = (vec4*)sh.extra;
-			int imax = int(sh.sz_extra / sizeof(vec4));
-
-			int i = 0;
-			while ((i < imax) && (skyGrad[i].w < best_hit.n.z)) ++i;
-
-			if (i < 2) return skyGrad[0].xyz();
-			if (i == imax) return skyGrad[imax - 1].xyz();
-			return lerp(skyGrad[i - 1].xyz(), skyGrad[i].xyz(),
-				(best_hit.n.z - skyGrad[i - 1].w) / (skyGrad[i].w - skyGrad[i - 1].w));
-
-
+			delete[] list_solids;
 		}
 
-		case SOLID_DISC: return vec3(1.0f, 0.0f, 0.0f);
-		}
+		num_solids = 0;
+		num_materials = 0;
 	}
 
-	return vec3(0.0f, 0.0f, 0.0f);
+	bool hit(const ray3 &r, float tmin, float tmax, hit_record& hit_data) const  {
+		hit_record test_hit;
+		bool is_hit = false;
+
+		tmax *= 0.9f; // Degrade Fast
+
+		for (int i = 0; i < num_solids; ++i) {
+			if (false == list_solids[i]->hit(r, tmin, tmax, &test_hit))
+				continue;
+
+			if (is_hit && (test_hit.t > hit_data.t)) continue;
+
+			hit_data = test_hit;
+			hit_data.hitid = i;
+			tmax = hit_data.t;
+			is_hit = true;
+		}
+
+		return is_hit;
+	}
+
+	bool colour(ray3& ray, const hit_record& hit, vec3& out_colour) const {
+		if (hit.hitid > num_solids) return true;
+		solidhit* sh = list_solids[hit.hitid];
+		u16 mat_index = sh->get_material();
+		if (mat_index > num_materials) return true;
+		material* mat = list_materials[mat_index];
+
+		return mat->colour(ray, hit, out_colour);
+	}
+
+	vec3 cast_ray(const raycast_state& rs, ray3 r, float tmin, float tmax) const {
+		hit_record hit_data;
+		vec3 out_col = vec3(0.0f, 0.0f, 0.0f);
+		for (int i = 0; i < rs.num_bounces; ++i) {
+			if (false == hit(r, tmin, tmax, hit_data))
+				return out_col;
+			
+			if (colour(r, hit_data, out_col))
+				return out_col;
+
+			// Mix
+		}
+
+		return out_col;
+	}
+};
+
+world g_world;
+const world& getWorld() { return g_world; }
+
+void init_world() {
+	std::vector<solidhit*> vsolids;
+	std::vector<material*> vmats;
+
+	vmats.push_back(new mat_sky({
+		vec4(1.0f, 1.0f, 1.0f, 0.0f),
+		vec4(0.5f, 0.7f, 1.0f, 0.7f),
+		vec4(0.7f, 0.7f, 1.0f, 0.9f) }));
+	vsolids.push_back(new solid_skysphere(1000.0f));
+	vsolids.back()->set_material(u16(vmats.size() - 1));
+
+	vmats.push_back(new mat_tiles(0.0f, 1.0f));
+	vsolids.push_back(new solid_plane(vec4(0.0f, 0.0f, 1.0f, 0.0f)));
+	vsolids.back()->set_material(u16(vmats.size() - 1));
+
+	vmats.push_back(new mat_diffuse(0.2f, 1.0f));
+	for (vec4 p : {
+		vec4(-3.0f, 10.0f, 2.0f, 0.5f),
+		vec4(0.0f, 10.0f, 1.0f, 0.5f),
+		vec4(+2.7f, 10.5f, 0.7f, 0.5f),
+		vec4(+2.7f, 10.5f, 1.7f, 0.5f),
+		vec4(+4.0f, 10.0f, 1.0f, 0.9f)
+		}) {
+		vsolids.push_back(new solid_ball(p));
+		vsolids.back()->set_material(u16(vmats.size() - 1));
+	}
+
+	vmats.push_back(new mat_normal());
+	vsolids[3]->set_material(u16(vmats.size() - 1));
+
+	vmats.push_back(new mat_glass(0.0f, 1.0f));
+	vsolids[6]->set_material(u16(vmats.size() - 1));
+
+	//
+	g_world.free_world();
+
+	g_world.num_solids = vsolids.size();
+	g_world.list_solids = new solidhit*[g_world.num_solids];
+	for (u64 i = 0; i < g_world.num_solids; ++i)
+		g_world.list_solids[i] = vsolids[i];
+
+	g_world.num_materials = u16(vmats.size());
+	g_world.list_materials = new material*[g_world.num_materials];
+	for (u16 i = 0; i < g_world.num_materials; ++i)
+		g_world.list_materials[i] = vmats[i];
+	
+	
 }
 
-void Raycast(ImageData &output, const raycast_state& s) {
+void Raycast(ImageData &output, const raycast_state& rs) {
 
   const float invWidth = 1.0f / float(output.width);
   const float invHeight = 1.0f / float(output.height);
   const float ratio = float(output.width) / float(output.height);
   const int limit = output.width * output.height * 3;
 
-  const float inv_ns = 1.0f / float(s.num_samples);
-  const vec3 perp = s.up * s.cam.dir();
+  const float inv_ns = 1.0f / float(rs.num_samples);
+  const vec3 perp = rs.up * rs.cam.dir();
 
   // Fake Animating world Bullshit which should be in update
-  if (list_solids == nullptr) 
+  if (g_world.num_solids == 0) 
 	  init_world();
 
-  list_solids[1].v.w = 0.25f + (sinf(g_ticks_since_start * 0.001f) + 1.0f) * 1.0f;
-  list_solids[2].v.z = sinf(g_ticks_since_start * 0.001f) * 2.0f;
+  ((solid_ball*)(g_world.list_solids[2]))->v.w = 0.25f + (sinf(g_ticks_since_start * 0.001f) + 1.0f) * 1.0f;
+  ((solid_ball*)(g_world.list_solids[3]))->v.z = sinf(g_ticks_since_start * 0.001f) * 2.0f;
 
-  int pass_tick = (s.pass_break>0)?(rand() % s.pass_break):0;
+  const world& w = getWorld();
+  int pass_tick = (rs.pass_break>0)?(rand() % rs.pass_break):0;
 
   int c = 0;
   for (int y = output.height - 1; y >= 0; --y) {
     float v = (output.height - y) * invHeight;
-    for (int x = output.width - 1; x >= 0; --x) {
-		if (s.pass_break > 1) {
+	for (int x = output.width - 1; x >= 0; --x) {
+		if (rs.pass_break > 1) {
 			if (--pass_tick > 0) {
 				c += 3;
 				continue;
 			}
 			else {
-				pass_tick = rand() % s.pass_break;
+				pass_tick = rand() % rs.pass_break;
 			}
 		}
 
-      float u = x * invWidth;
-	  vec3 col(0.0f, 0.0f, 0.0f);
-	  ray3 r(s.cam.origin(), s.cam.dir() + s.up * (v - 0.5f) + perp * (u - 0.5f) * ratio);
-	  r.b.Normalize();
+		float u = x * invWidth;
+		vec3 col(0.0f, 0.0f, 0.0f);
+		ray3 r(rs.cam.origin(), rs.cam.dir() + rs.up * (v - 0.5f) + perp * (u - 0.5f) * ratio);
+		r.b.Normalize();
 
-	  if (s.num_samples > 1) {
-		  for (int n = 0; n < s.num_samples; ++n) {
-			  const vec2& poi = (s.num_samples >8)?poissonDisc50(n):poissonDisc8(n);
-			  col += color(ray3(r.a, r.b
-				  + perp * poi.x*invWidth
-				  + s.up * poi.y*invHeight),
-				  0.000001f, 300.0f);
-		  }
 
-		  col *= inv_ns;
-	  }
-	  else {
-		  col = color(r, 0.00001f, 300.0f);
-	  }
+		col = w.cast_ray(rs, r, 0.000001f, 300.0f);
 
-      output.imgData[c++] = char(255 * col.x);
-      output.imgData[c++] = char(255 * col.y);
-      output.imgData[c++] = char(255 * col.z);
-    }
+		// Sub Sampling
+		for (int n = 1; n < rs.num_samples; ++n) {
+			const vec2& poi = (rs.num_samples > 8) ? poissonDisc50(n) : poissonDisc8(n);
+			ray3 r_sub = ray3(r.a, r.b
+				+ perp * poi.x*invWidth
+				+ rs.up * poi.y*invHeight);
+
+			col += w.cast_ray(rs, r_sub, 0.000001f, 300.0f);
+		}
+
+		if (rs.num_samples > 1)
+			col *= inv_ns;
+
+		output.imgData[c++] = char(255 * col.x);
+		output.imgData[c++] = char(255 * col.y);
+		output.imgData[c++] = char(255 * col.z);
+	}
   }
 
   assert(c <= limit);
 
-  if (s.border) {
+  if (rs.border) {
 	  c = (0 * output.width * 3);
 	  for (int x = output.width - 1; x >= 0; --x) {
 		  output.imgData[c++] = char(0);

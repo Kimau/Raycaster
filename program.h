@@ -17,6 +17,7 @@ void render(SDL_Window *window);
 struct raycast_state {
 	int pass_break = 1;
 	int num_samples = 3;
+	int num_bounces = 30;
 	bool border = true;
 	bool want_draw = false;
 

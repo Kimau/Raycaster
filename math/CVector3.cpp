@@ -52,6 +52,40 @@ vec3 vec3::Rotate(float _degree, const vec3& _axis) const {
 	  ax.z + (z - ax.z) * _cosAng + _Cross.z * _sinAng);
 }
 
+
+float vec3::Magnitude() const
+{
+	return (sqrtf(x * x + y * y + z * z));
+}
+
+float vec3::Angle(const vec3& _vector) const
+{
+	// Get the arc cosine of the (dotProduct / vectorsMagnitude) which is the
+	// angle in RADIANS.
+	// (IE.   PI/2 radians = 90 degrees      PI radians = 180 degrees    2*PI
+	// radians = 360 degrees)
+	// To convert radians to degress use this equation:   radians * (PI / 180)
+	// TO convert degrees to radians use this equation:   degrees * (180 / PI)
+	float _angle = acosf(Dot(_vector) / (Magnitude() * _vector.Magnitude()));
+
+	// Here we make sure that the angle is not a -1.#IND0000000 number, which
+	// means indefinite.
+	// acos() thinks it's funny when it returns -1.#IND0000000.  If we don't do
+	// this check,
+	// our collision results will sometimes say we are colliding when we aren't.
+	// I found this
+	// out the hard way after MANY hours and already wrong written tutorials :)
+	// Usually
+	// this value is found when the dot product and the magnitude are the same
+	// value.
+	// We want to return 0 when this happens.
+	if (isnan(_angle))
+		return 0;
+
+	// Return the angle in radians
+	return (_angle);
+}
+
 //	Normalizes the vector
 void vec3::Normalize() {
   // Get the magnitude
@@ -65,12 +99,6 @@ void vec3::Normalize() {
     y /= _Magnitude;
     z /= _Magnitude;
   }
-}
-//	Inverts all the values of the Vector
-void vec3::Invert() {
-  x = -x;
-  y = -y;
-  z = -z;
 }
 
 //		Accessors
@@ -105,59 +133,4 @@ vec3 vec3::getLatitude() const {
   vec3 _lat(-y, x, 0.0f);
   _lat.Normalize();
   return _lat;
-}
-//	Returns the maginitude of the vector
-float vec3::Magnitude() const { return (sqrtf(x * x + y * y + z * z)); }
-//	Returns the Squared Magnitude of a Vector
-float vec3::SqrdMag() const { return x * x + y * y + z * z; }
-//	Gets the Dot product of the Vectors
-float vec3::Dot(const vec3& _vector) const {
-  return ((x * _vector.x) + (y * _vector.y) + (z * _vector.z));
-}
-//	Gets the angle between
-float vec3::Angle(const vec3& _vector) const {
-  // Get the arc cosine of the (dotProduct / vectorsMagnitude) which is the
-  // angle in RADIANS.
-  // (IE.   PI/2 radians = 90 degrees      PI radians = 180 degrees    2*PI
-  // radians = 360 degrees)
-  // To convert radians to degress use this equation:   radians * (PI / 180)
-  // TO convert degrees to radians use this equation:   degrees * (180 / PI)
-  float _angle = acosf(Dot(_vector) / (Magnitude() * _vector.Magnitude()));
-
-  // Here we make sure that the angle is not a -1.#IND0000000 number, which
-  // means indefinite.
-  // acos() thinks it's funny when it returns -1.#IND0000000.  If we don't do
-  // this check,
-  // our collision results will sometimes say we are colliding when we aren't.
-  // I found this
-  // out the hard way after MANY hours and already wrong written tutorials :)
-  // Usually
-  // this value is found when the dot product and the magnitude are the same
-  // value.
-  // We want to return 0 when this happens.
-  if (isnan(_angle))
-    return 0;
-
-  // Return the angle in radians
-  return (_angle);
-}
-//	Gets the distance to the closest point on the line
-float vec3::Distance(const vec3& _point, const vec3& _orig) const {
-  vec3 _top = ((_point - _orig) * (*this));
-  _top /= Magnitude();
-  return _top.Magnitude();
-}
-//	Gets the distance to the closest point on the line
-//	ASSUMES (this) is from Origin and length 1
-float vec3::DistanceFast(const vec3& _point) const {
-  vec3 _top = (_point * (*this));
-  return _top.Magnitude();
-}
-
-//	Returns an array for use
-//	ASSUMES ARRAY IS OF LENGTH 3 OR GREATER
-void vec3::getArray(float *_array) const {
-  _array[0] = x;
-  _array[1] = y;
-  _array[2] = z;
 }

@@ -16,6 +16,7 @@ raycast_state g_render_states[NOOF_RENDER_STATES] = {
 	{
 		10,
 		5,
+		8,
 		false,
 		false
 	},
@@ -23,6 +24,7 @@ raycast_state g_render_states[NOOF_RENDER_STATES] = {
 {
 	0,
 	100,
+	50,
 	true,
 	false
 }
@@ -155,7 +157,8 @@ void update() {
 			ImGui::DragFloat3("Pos", &rs.cam.a.x, 0.1f);
 			ImGui::DragFloat3("Dir", &rs.cam.b.x, 0.1f);
 			ImGui::SliderFloat2("Scale", &rs.ray_scale.x, 64.0f, 1024.0f, "%.0f");
-			ImGui::SliderInt("Samples", &rs.num_samples, 1, 30);
+			ImGui::InputInt("Samples", &rs.num_samples);
+			ImGui::InputInt("Bounces", &rs.num_bounces);
 		}
 	}
 	ImGui::Separator();
