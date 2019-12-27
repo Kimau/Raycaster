@@ -34,12 +34,10 @@ vec2 vec2::getNormalized() const {
 //	Returns the maginitude of the vector
 float vec2::Magnitude() const { return (sqrtf(x * x + y * y)); }
 //	Gets the Dot product of the Vectors
-float vec2::Dot(vec2 _vector) const {
-  return ((x * _vector.x) + (y * _vector.y));
-}
+
 //	Gets the angle between
 float vec2::Angle(vec2 _vector) const {
-  float _angle = acosf((Dot(_vector) / (Magnitude() * _vector.Magnitude())));
+  float _angle = acosf((dot(*this, _vector) / (Magnitude() * _vector.Magnitude())));
 
   if (isnan(_angle))
     return 0;

@@ -54,14 +54,8 @@ public:
   vec3 RotateZ(float _degree) const;
   vec3 Rotate(float _degree, const vec3& _axis) const;
 
-  inline vec3 getReflect(vec3 n) const { return (*this) - n * (2.0f * Dot(n)); }
-  inline vec3 getRefract(vec3 n) const { return (*this) + n * (2.0f * Dot(n)); }
-  inline void Reflect(vec3 n) { *this -= n * (2.0f * Dot(n)); }
-  inline void Refract(vec3 n) { *this += n * (2.0f * Dot(n)); }
-
   float Magnitude() const;
-  inline float SqrdMag() const { return x * x + y * y + z * z; }
-  inline float Dot(const vec3& _vector) const { return ((x * _vector.x) + (y * _vector.y) + (z * _vector.z)); }
+  constexpr inline float SqrdMag() const { return x * x + y * y + z * z; }
   float Angle(const vec3& _vector) const;
 
   inline float Distance(const vec3& _point, const vec3& _orig = vec3(0, 0, 0)) const {
@@ -86,5 +80,9 @@ public:
 
   float x, y, z;
 };
+
+constexpr float dot(const vec3& a, const vec3& b) { return ((a.x * b.x) + (a.y * b.y) + (a.z * b.z)); }
+inline vec3 reflect(const vec3& v, const vec3& n) { return v - n * (2.0f * dot(v,n)); }
+bool refract(const vec3& v, const vec3& n, float ni_over_nt, vec3& out);
 
 extern const vec3 up_vec;

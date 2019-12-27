@@ -31,9 +31,10 @@ public:
   void Invert();
   vec2 getNormalized() const;
   float Magnitude() const;
-  float Dot(vec2 _vector) const;
   float Angle(vec2 _vector) const;
 
   float x, y;
 };
+
+constexpr float dot(const vec2& a, const vec2& b) { return (a.x * b.x) + (a.y * b.y); }
 

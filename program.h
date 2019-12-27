@@ -20,6 +20,7 @@ struct raycast_state {
 	int num_bounces = 30;
 	bool border = true;
 	bool want_draw = false;
+	bool use_poisson = true;
 
 	ray3 cam = ray3(vec3(0.0f, 0.0f, 1.5f), vec3(0.0f, 1.0f, 0.0f));
 	vec3 up = vec3(0.0f, 0.0f, 1.0f);

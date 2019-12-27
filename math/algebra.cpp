@@ -1,14 +1,16 @@
 #include "algebra.h"
+#include <stdlib.h>
+#include <math.h>
 
 
 vec4 createPlaneFromPoints(const vec3& a, const vec3& b, const vec3& c) {
 	vec3 norm = ((a - b)*(b - c));
 	norm.Normalize();
-	return vec4(norm.x, norm.y, norm.z, -norm.Dot(a));
+	return vec4(norm.x, norm.y, norm.z, - dot(norm,a));
 }
 
-vec4 createPlaneFromPointNormal(const vec3& pt, const vec3& norm) { return vec4(norm.x, norm.y, norm.z, -norm.Dot(pt)); }
-float distanceFromPlane(const vec3& pt, const vec4& plane) { return -plane.xyz().Dot(pt) - plane.w; }
+vec4 createPlaneFromPointNormal(const vec3& pt, const vec3& norm) { return vec4(norm.x, norm.y, norm.z, -dot(norm,pt)); }
+float distanceFromPlane(const vec3& pt, const vec4& plane) { return - (dot(plane.xyz(), pt) + plane.w); }
 
 
 
@@ -207,3 +209,13 @@ vec2 poissonDisc8(int i) { return poisson_disc8[i];  }
 vec3 poissonSphere8(int i) { return poisson_sphere8[i]; }
 vec2 poissonDisc50(int i) { return poisson_disc50[i]; }
 vec3 poissonSphere50(int i) { return poisson_sphere50[i]; }
+
+float random_float()
+{
+	return float(rand()) / float(RAND_MAX + 1.0f);
+}
+
+vec3 random_in_unit_sphere()
+{
+	return vec3(random_float()*1.99f - 1.0f, random_float()*1.99f - 1.0f, random_float()*1.99f - 1.0f);
+}

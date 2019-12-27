@@ -22,3 +22,7 @@ vec2 poissonDisc8(int i);
 vec3 poissonSphere8(int i);
 vec2 poissonDisc50(int i);
 vec3 poissonSphere50(int i);
+
+
+float random_float();
+vec3 random_in_unit_sphere();

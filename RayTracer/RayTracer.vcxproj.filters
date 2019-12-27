@@ -81,6 +81,12 @@
     <ClCompile Include="..\math\algebra.cpp">
       <Filter>Math</Filter>
     </ClCompile>
+    <ClCompile Include="..\material.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\solid_hit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\imgui_impl_sdl_gl3.h">
@@ -142,6 +148,15 @@
     </ClInclude>
     <ClInclude Include="..\libs\stb\stb_image_write.h">
       <Filter>Libs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\material.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\solid_hit.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hit_record.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

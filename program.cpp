@@ -23,8 +23,8 @@ raycast_state g_render_states[NOOF_RENDER_STATES] = {
 
 {
 	0,
-	100,
 	50,
+	1000,
 	true,
 	false
 }
@@ -153,10 +153,10 @@ void update() {
 		{
 			if (false == rs.want_draw)
 				rs.want_draw = ImGui::Button("Redraw");
-
 			ImGui::DragFloat3("Pos", &rs.cam.a.x, 0.1f);
 			ImGui::DragFloat3("Dir", &rs.cam.b.x, 0.1f);
 			ImGui::SliderFloat2("Scale", &rs.ray_scale.x, 64.0f, 1024.0f, "%.0f");
+			ImGui::Checkbox("Poisson Sampling", &rs.use_poisson);
 			ImGui::InputInt("Samples", &rs.num_samples);
 			ImGui::InputInt("Bounces", &rs.num_bounces);
 		}

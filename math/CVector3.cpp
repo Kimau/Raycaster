@@ -44,7 +44,7 @@ vec3 vec3::Rotate(float _degree, const vec3& _axis) const {
 
   vec3 ax = _axis.getNormalized();
   const vec3 _Cross = vec3(x, y, z) * ax;
-  ax = ax * Dot(ax);
+  ax = ax * dot(*this, ax);
 
   //	Rotate
   return vec3(ax.x + (x - ax.x) * _cosAng + _Cross.x * _sinAng,
@@ -66,7 +66,7 @@ float vec3::Angle(const vec3& _vector) const
 	// radians = 360 degrees)
 	// To convert radians to degress use this equation:   radians * (PI / 180)
 	// TO convert degrees to radians use this equation:   degrees * (180 / PI)
-	float _angle = acosf(Dot(_vector) / (Magnitude() * _vector.Magnitude()));
+	float _angle = acosf(dot(*this, _vector) / (Magnitude() * _vector.Magnitude()));
 
 	// Here we make sure that the angle is not a -1.#IND0000000 number, which
 	// means indefinite.
@@ -134,3 +134,22 @@ vec3 vec3::getLatitude() const {
   _lat.Normalize();
   return _lat;
 }
+
+
+bool refract(const vec3& v, const vec3& n, float ni_over_nt, vec3& out)
+{
+	out = v + n * (2.0f * dot(v, n));
+	return true;
+/*
+	vec3 vnorm = v.getNormalized();
+	float dt = dot(vnorm, n);
+
+	float discriminant = 1.0f - ni_over_nt * ni_over_nt*(1.0f - dt * dt);
+	if (discriminant <= 0) 
+		return false;
+
+	out = (vnorm - n * dt) * ni_over_nt - n * sqrtf(discriminant);
+	return true;		
+	*/
+}
+
