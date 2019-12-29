@@ -1,12 +1,15 @@
 #pragma once
 #include "math/algebra.h"
 
+class material;
+
 class hit_record
 {
 public:
-	float t = 0.0f;
 	vec3 p;
 	vec3 n;
-	u32 hitid = 0;
+	const material* mat = nullptr;
+	float t = 0.0f;
+	u64 obj_idx = 0;
 };
 

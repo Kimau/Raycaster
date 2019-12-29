@@ -35,11 +35,11 @@ void AppLoop(SDL_Window *window) {
     ImGui_ImplSdlGL3_NewFrame(window);
 
     //
-
-    update();
+	update();
 
     // Rendering
-    render(window);
+	raycast_state& rs = g_render_states[g_render_state_index];
+	render(window, rs);
 
     // If frame finished early
     uint32_t newTick = SDL_GetTicks();

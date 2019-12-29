@@ -13,23 +13,18 @@ enum solid_type
 
 class solidhit {
 public:
+	u16 mat = 0;
 
 	virtual bool hit(const ray3 &r, float tmin, float tmax, hit_record* hit_data) const = 0;
-	virtual u16 get_material() = 0;
-	virtual void set_material(u16 mat) = 0;
-	virtual solid_type get_type() = 0;
+	virtual solid_type get_type() const = 0;
 };
 
 class solid_ball : public solidhit {
 public:
 	vec4 v;
-	u16 mat = 0;
 
-	solid_ball(vec4 vec) : v(vec), mat(0) {}
-
-	inline u16 get_material() { return mat; }
-	inline void set_material(u16 m) { mat = m; }
-	inline solid_type get_type() { return SOLID_BALL; }
+	solid_ball(vec4 vec) : v(vec) {}
+	inline solid_type get_type() const { return SOLID_BALL; }
 
 	bool hit(const ray3 &r, float tmin, float tmax, hit_record* hit_data) const;
 };
@@ -37,13 +32,9 @@ public:
 class solid_skysphere : public solidhit {
 public:
 	float rad = 0.0f;
-	u16 mat = 0;
 
 	solid_skysphere(float radius) : rad(radius) {}
-
-	inline u16 get_material() { return mat; }
-	inline void set_material(u16 m) { mat = m; }
-	inline solid_type get_type() { return SOLID_SKY; }
+	inline solid_type get_type() const { return SOLID_SKY; }
 
 	bool hit(const ray3 &r, float tmin, float tmax, hit_record* hit_data) const override;
 };
@@ -51,13 +42,9 @@ public:
 class  solid_plane : public solidhit {
 public:
 	vec4 v;
-	u16 mat = 0;
 
-	solid_plane(vec4 vec) : v(vec), mat(0) {}
-
-	inline u16 get_material() { return mat; }
-	inline void set_material(u16 m) { mat = m; }
-	inline solid_type get_type() { return SOLID_PLANE; }
+	solid_plane(vec4 vec) : v(vec) {}
+	inline solid_type get_type() const { return SOLID_PLANE; }
 
 	bool hit(const ray3 &r, float tmin, float tmax, hit_record* hit_data) const override;
 };
@@ -67,13 +54,9 @@ class  solid_disc : public solidhit
 public:
 	vec4 v;
 	float r2;
-	u16 mat = 0;
 
-	solid_disc(vec4 vec, float rad) : v(vec), r2(rad*rad), mat(0) {}
-
-	inline u16 get_material() { return mat; }
-	inline void set_material(u16 m) { mat = m; }
-	inline solid_type get_type() { return SOLID_PLANE; }
+	solid_disc(vec4 vec, float rad) : v(vec), r2(rad*rad) {}
+	inline solid_type get_type() const { return SOLID_PLANE; }
 
 
 	bool hit(const ray3 &r, float tmin, float tmax, hit_record* hit_data) const override;

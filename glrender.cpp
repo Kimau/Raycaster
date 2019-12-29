@@ -149,9 +149,7 @@ bool glinit() {
 bool setupOrthViewport(int width, int height) { return false; }
 
 // Render
-void render(SDL_Window *window) {
-	raycast_state& rs = g_render_states[g_render_state_index];
-
+void render(SDL_Window *window, raycast_state& rs) {
   // Setup Render State
   glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
   const int ray_width = int(rs.ray_scale.x / 32.0f) * 32;
@@ -243,7 +241,6 @@ void render(SDL_Window *window) {
 
 	Raycast(g_rayresult, rs);
     g_rayresult.CopyToGPU();
-
 	rs.want_draw = false;
   }
 

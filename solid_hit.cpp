@@ -6,13 +6,14 @@ bool solid_ball::hit(const ray3 &r, float tmin, float tmax, hit_record* hit_data
 	const vec3 oc = r.origin() - tp;
 	const float oc_mag_sq = oc.SqrdMag();
 	if (oc_mag_sq < (v.w*v.w)) {
-		float t = v.w - sqrtf(oc_mag_sq);
+		float oc_mag = sqrtf(oc_mag_sq);
+		float t = v.w - oc_mag;
 		if ((t < tmin) || (t > tmax)) return false;
 
 		if (hit_data != nullptr) {
-			hit_data->t = v.w - sqrtf(oc_mag_sq);
+			hit_data->t = v.w - oc_mag;
 			hit_data->p = r.PointAt(hit_data->t);
-			hit_data->n = (r.PointAt(hit_data->t) - tp) / v.w;
+			hit_data->n = (hit_data->p - tp) / v.w;
 		}
 		return true;
 	}
@@ -31,7 +32,7 @@ bool solid_ball::hit(const ray3 &r, float tmin, float tmax, hit_record* hit_data
 	if (hit_data != nullptr) {
 		hit_data->t = t;
 		hit_data->p = r.PointAt(hit_data->t);
-		hit_data->n = (r.PointAt(hit_data->t) - tp) / v.w;
+		hit_data->n = (hit_data->p - tp) / v.w;
 	}
 
 	return true;
@@ -45,7 +46,7 @@ bool solid_skysphere::hit(const ray3 &r, float tmin, float tmax, hit_record* hit
 
 		float radius = tmax + sqrtf(oc_mag_sq);
 		hit_data->p = r.PointAt(tmax);
-		hit_data->n = r.PointAt(tmax) / radius;
+		hit_data->n = hit_data->p / radius;
 		hit_data->t = tmax;
 	}
 

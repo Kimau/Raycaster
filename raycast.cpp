@@ -92,60 +92,66 @@ public:
 		tmax *= 0.9f; // Degrade Fast
 
 		for (int i = 0; i < num_solids; ++i) {
-			if (false == list_solids[i]->hit(r, tmin, tmax, &test_hit))
+			const solidhit* sh = list_solids[i];
+			if (false == sh->hit(r, tmin, tmax, &test_hit))
 				continue;
 
 			if (is_hit && (test_hit.t > hit_data.t)) continue;
 
-			hit_data = test_hit;
-			hit_data.hitid = i;
-			tmax = hit_data.t;
 			is_hit = true;
+			tmax = test_hit.t;			
+			hit_data = test_hit;
+			hit_data.obj_idx = i;
+			hit_data.mat = list_materials[sh->mat];
 		}
 
 		return is_hit;
 	}
 
-	const material* lookup_material(const hit_record& hit) const {
-		if (hit.hitid > num_solids) return nullptr;
-		solidhit* sh = list_solids[hit.hitid];
-		u16 mat_index = sh->get_material();
-		if (mat_index > num_materials) return nullptr;
-		return list_materials[mat_index];
-	}
-
-	vec3 cast_ray(const raycast_state& rs, ray3 r, float tmin, float tmax) const {
+	vec3 colour(const raycast_state& rs, ray3 r, float tmin, float tmax, int bounce) const {
 		hit_record hit_data;
-		vec3 out_col = vec3(0.0f, 0.0f, 0.0f);
+		vec3 col;
+		ray3 bounce_ray;
 
-		u16 bounce_index = 0;
-		const material* mat_bounch_backs[100];
-		mat_bounch_backs[0] = nullptr;
+		if (false == hit(r, tmin, tmax, hit_data))
+			return col;
 
-		int i = 0;
-		while(i < rs.num_bounces) {
-			if (false == hit(r, tmin, tmax, hit_data))
-				break;
+		if (bounce >= rs.num_bounces) 
+			return col;
+		if (false == hit_data.mat->scatter(r, hit_data, col, bounce_ray)) 
+			return col;
 
-			const material* mat = lookup_material(hit_data);
-			if (mat == nullptr)
-				break;
-
-			if ((bounce_index<100) && (mat->needsBounceBack()))
-				mat_bounch_backs[bounce_index++] = mat;
-			
-			if(mat->colour(r, hit_data, out_col))
-				break;
-
-			++i;
+		switch (rs.dmode) {
+		case NO_DEBUG: break;
+		case DEBUG_NORMAL: return hit_data.n * 0.5f + vec3(0.5f, 0.5f, 0.5f);
+		case DEBUG_BOUNCE_DIR: return bounce_ray.b * 0.5f + vec3(0.5f, 0.5f, 0.5f);
 		}
 
-		while (bounce_index > 0) {
-			mat_bounch_backs[--bounce_index]->bounceBack(out_col);
-		}
-
-		return out_col;
+		return col * colour(rs, bounce_ray, tmin, tmax, bounce + 1);
 	}
+
+	vec3 colour_norecurse(const raycast_state& rs, ray3 r, float tmin, float tmax) const {
+		hit_record hit_data;
+		vec3 col;
+		ray3 bounce_ray;
+
+		vec3 final_col(1.0f, 1.0f, 1.0f);
+
+		for (int i = 0; i < rs.num_bounces; ++i) {
+			if (false == hit(r, tmin, tmax, hit_data)) {
+				return vec3(0.0f, 0.0f, 0.0f);
+			} else if (hit_data.mat->scatter(r, hit_data, col, bounce_ray)) {
+				r = bounce_ray;
+				final_col *= col;
+			}
+			else {
+				return final_col * col;
+			}
+		}
+
+		return vec3(0.0f, 0.0f, 0.0f);
+	}
+
 };
 
 world g_world;
@@ -155,20 +161,20 @@ void init_world() {
 	std::vector<solidhit*> vsolids;
 	std::vector<material*> vmats;
 
-	vmats.push_back(new mat_sky({
+	vmats.push_back(new mat_skysphere({
 		vec4(0.2f, 0.2f, 0.2f,-0.9f),
 		vec4(1.0f, 0.8f, 0.8f,-0.3f),
 		vec4(1.0f, 1.0f, 1.0f, 0.0f),
 		vec4(0.5f, 0.7f, 1.0f, 0.7f),
 		vec4(0.7f, 0.7f, 1.0f, 0.9f) }));
 	vsolids.push_back(new solid_skysphere(1000.0f));
-	vsolids.back()->set_material(u16(vmats.size() - 1));
+	vsolids.back()->mat =u16(vmats.size() - 1);
 
-	vmats.push_back(new mat_tiles(0.0f, 1.0f));
+	vmats.push_back(new mat_tiles(vec3(1.0f, 0.8f, 0.8f), vec3(0.8f, 1.0f, 0.8f), 0.2f));
 	vsolids.push_back(new solid_plane(vec4(0.0f, 0.0f, 1.0f, 0.0f)));
-	vsolids.back()->set_material(u16(vmats.size() - 1));
+	vsolids.back()->mat = u16(vmats.size() - 1);
 
-	vmats.push_back(new mat_diffuse(0.2f, 1.0f));
+	vmats.push_back(new mat_lambertian(vec3(1.0f, 1.0f, 1.0f), 0.0f));
 	for (vec4 p : {
 		vec4(-3.0f, 10.0f, 2.0f, 0.5f),
 		vec4(0.0f, 10.0f, 1.0f, 0.5f),
@@ -177,23 +183,23 @@ void init_world() {
 		vec4(+4.0f, 10.0f, 1.0f, 0.9f)
 		}) {
 		vsolids.push_back(new solid_ball(p));
-		vsolids.back()->set_material(u16(vmats.size() - 1));
+		vsolids.back()->mat = u16(vmats.size() - 1);
 	}
 
 	vmats.push_back(new mat_normal());
-	vsolids[3]->set_material(u16(vmats.size() - 1));
+	vsolids[3]->mat = u16(vmats.size() - 1);
 
-	vmats.push_back(new mat_diffuse(0.5f, 0.5f));
-	vsolids[4]->set_material(u16(vmats.size() - 1));
-	vsolids[5]->set_material(u16(vmats.size() - 1));
-
-	vmats.push_back(new mat_glass(0.0f, vec3(1.0f, 1.0f, 1.0f)));
-	vsolids[6]->set_material(u16(vmats.size() - 1));
-
+	vmats.push_back(new mat_metal(vec3(1.0f, 1.0f, 1.0f), 0.0f));
+	vsolids[4]->mat = u16(vmats.size() - 1);
+	vsolids[5]->mat = u16(vmats.size() - 1);
 
 	vsolids.push_back(new solid_ball(vec4(-5.0f, 5.0f, 3.0f, 2.0f)));
-	vmats.push_back(new mat_lambertian(vec3(1.0f, 0.0f, 0.0f), 0.1f));
-	vsolids.back()->set_material(u16(vmats.size() - 1));
+	vmats.push_back(new mat_lambertian(vec3(1.0f, 0.0f, 0.0f), 0.5f));
+	vsolids.back()->mat = u16(vmats.size() - 1);
+
+	vsolids.push_back(new solid_ball(vec4(2.0f, 2.0f, 0.0f, 2.0f)));
+	vmats.push_back(new mat_dielectric(RefIdxGlass));
+	vsolids.back()->mat = u16(vmats.size() - 1);
 
 	//
 	g_world.free_world();
@@ -213,104 +219,136 @@ void init_world() {
 
 void Raycast(ImageData &output, const raycast_state& rs) {
 
-  const float invWidth = 1.0f / float(output.width);
-  const float invHeight = 1.0f / float(output.height);
-  const float ratio = float(output.width) / float(output.height);
-  const int limit = output.width * output.height * 3;
+	const float invWidth = 1.0f / float(output.width);
+	const float invHeight = 1.0f / float(output.height);
+	const float ratio = float(output.width) / float(output.height);
+	const int limit = output.width * output.height * 3;
 
-  const float inv_ns = 1.0f / float(rs.num_samples);
-  const vec3 perp = rs.up * rs.cam.dir();
+	const float inv_ns = 1.0f / float(rs.num_samples);
+	const vec3 perp = cross(rs.up, rs.cam.b);
 
-  // Fake Animating world Bullshit which should be in update
-  if (g_world.num_solids == 0) 
-	  init_world();
+	// Fake Animating world Bullshit which should be in update
+	if (g_world.num_solids == 0)
+		init_world();
 
-  ((solid_ball*)(g_world.list_solids[2]))->v.w = 0.25f + (sinf(g_ticks_since_start * 0.001f) + 1.0f) * 1.0f;
-  ((solid_ball*)(g_world.list_solids[3]))->v.z = sinf(g_ticks_since_start * 0.001f) * 2.0f;
+	((solid_ball*)(g_world.list_solids[2]))->v.w = 0.25f + (sinf(g_ticks_since_start * 0.001f) + 1.0f) * 1.0f;
+	((solid_ball*)(g_world.list_solids[3]))->v.z = sinf(g_ticks_since_start * 0.001f) * 2.0f;
 
-  const world& w = getWorld();
-  int pass_tick = (rs.pass_break>0)?(rand() % rs.pass_break):0;
+	const world& w = getWorld();
+	u64 t = 0;
+	int pb = (rs.pass_break > 1)?rand() % rs.pass_break:0;
 
-  int c = 0;
-  for (int y = output.height - 1; y >= 0; --y) {
-    float v = (output.height - y) * invHeight;
-	for (int x = output.width - 1; x >= 0; --x) {
-		if (rs.pass_break > 1) {
-			if (--pass_tick > 0) {
+	int c = 0;
+	for (int y = output.height - 1; y >= 0; --y) {
+		float v = (output.height - y) * invHeight;
+		for (int x = output.width - 1; x >= 0; --x) {
+			if ((rs.pass_break > 1) && ((rand() % rs.pass_break) == pb)) {
 				c += 3;
 				continue;
 			}
+
+			float u = x * invWidth;
+			vec3 col(0.0f, 0.0f, 0.0f);
+			ray3 r(rs.cam.a, rs.cam.b + rs.up * (v - 0.5f) + perp * (u - 0.5f) * ratio);
+			r.b.Normalize();
+
+			if (rs.dmode == DEBUG_TIME)
+				t = SDL_GetPerformanceCounter();
+
+			if (rs.use_recurse) {
+				col = w.colour(rs, r, 0.000001f, 300.0f, 0);
+
+				// Sub Sampling
+				if (rs.use_poisson) {
+					for (int n = 1; n < rs.num_samples; ++n) {
+						const vec2& poi = (rs.num_samples > 8) ? poissonDisc50(n) : poissonDisc8(n);
+						ray3 r_sub = ray3(r.a, r.b
+							+ perp * poi.x*invWidth
+							+ rs.up * poi.y*invHeight);
+
+						col += w.colour(rs, r_sub, 0.000001f, 300.0f, 0);
+					}
+				}
+				else { // C Random
+					for (int n = 1; n < rs.num_samples; ++n) {
+						ray3 r_sub = ray3(r.a, r.b
+							+ perp * (random_float()*2.0f - 1.0f) *invWidth
+							+ rs.up * (random_float()*2.0f - 1.0f)*invHeight);
+
+						col += w.colour(rs, r_sub, 0.000001f, 300.0f, 0);
+					}
+				}
+			}
 			else {
-				pass_tick = rand() % rs.pass_break;
+				col = w.colour_norecurse(rs, r, 0.000001f, 300.0f);
+
+				// Sub Sampling
+				if (rs.use_poisson) {
+					for (int n = 1; n < rs.num_samples; ++n) {
+						const vec2& poi = (rs.num_samples > 8) ? poissonDisc50(n) : poissonDisc8(n);
+						ray3 r_sub = ray3(r.a, r.b
+							+ perp * poi.x*invWidth
+							+ rs.up * poi.y*invHeight);
+
+						col += w.colour_norecurse(rs, r_sub, 0.000001f, 300.0f);
+					}
+				}
+				else { // C Random
+					for (int n = 1; n < rs.num_samples; ++n) {
+						ray3 r_sub = ray3(r.a, r.b
+							+ perp * (random_float()*2.0f - 1.0f) *invWidth
+							+ rs.up * (random_float()*2.0f - 1.0f)*invHeight);
+
+						col += w.colour_norecurse(rs, r_sub, 0.000001f, 300.0f);
+					}
+				}
 			}
-		}
 
-		float u = x * invWidth;
-		vec3 col(0.0f, 0.0f, 0.0f);
-		ray3 r(rs.cam.origin(), rs.cam.dir() + rs.up * (v - 0.5f) + perp * (u - 0.5f) * ratio);
-		r.b.Normalize();
+			if (rs.num_samples > 1)
+				col *= inv_ns;
 
-
-		col = w.cast_ray(rs, r, 0.000001f, 300.0f);
-
-		// Sub Sampling
-		if (rs.use_poisson) {
-			for (int n = 1; n < rs.num_samples; ++n) {
-				const vec2& poi = (rs.num_samples > 8) ? poissonDisc50(n) : poissonDisc8(n);
-				ray3 r_sub = ray3(r.a, r.b
-					+ perp * poi.x*invWidth
-					+ rs.up * poi.y*invHeight);
-
-				col += w.cast_ray(rs, r_sub, 0.000001f, 300.0f);
+			if (rs.dmode == DEBUG_TIME) {
+				t = SDL_GetPerformanceCounter() - t;
+				output.imgData[c++] = u8(255 * (sinf(t*0.1f) * 0.5f + 0.5f));
+				output.imgData[c++] = u8(255 * (sinf(t*0.01f) * 0.5f + 0.5f));
+				output.imgData[c++] = u8(255 * (sinf(t*0.001f) * 0.5f + 0.5f));
+				continue;
 			}
+
+			output.imgData[c++] = char(255 * col.x);
+			output.imgData[c++] = char(255 * col.y);
+			output.imgData[c++] = char(255 * col.z);
 		}
-		else { // C Random
-			for (int n = 1; n < rs.num_samples; ++n) {
-				ray3 r_sub = ray3(r.a, r.b
-					+ perp * (random_float()*2.0f-1.0f) *invWidth
-					+ rs.up * (random_float()*2.0f - 1.0f)*invHeight);
-
-				col += w.cast_ray(rs, r_sub, 0.000001f, 300.0f);
-			}
-		}
-
-		if (rs.num_samples > 1)
-			col *= inv_ns;
-
-		output.imgData[c++] = char(255 * col.x);
-		output.imgData[c++] = char(255 * col.y);
-		output.imgData[c++] = char(255 * col.z);
 	}
-  }
+	
+	assert(c <= limit);
 
-  assert(c <= limit);
+	if (rs.border) {
+		c = (0 * output.width * 3);
+		for (int x = output.width - 1; x >= 0; --x) {
+			output.imgData[c++] = char(0);
+			output.imgData[c++] = char(0);
+			output.imgData[c++] = char(0);
+		}
+		c = ((output.height - 1) * output.width * 3);
+		for (int x = output.width - 1; x >= 0; --x) {
+			output.imgData[c++] = char(0);
+			output.imgData[c++] = char(0);
+			output.imgData[c++] = char(0);
+		}
 
-  if (rs.border) {
-	  c = (0 * output.width * 3);
-	  for (int x = output.width - 1; x >= 0; --x) {
-		  output.imgData[c++] = char(0);
-		  output.imgData[c++] = char(0);
-		  output.imgData[c++] = char(0);
-	  }
-	  c = ((output.height - 1) * output.width * 3);
-	  for (int x = output.width - 1; x >= 0; --x) {
-		  output.imgData[c++] = char(0);
-		  output.imgData[c++] = char(0);
-		  output.imgData[c++] = char(0);
-	  }
+		for (int y = output.height - 1; y >= 0; --y) {
+			c = (y * output.width) * 3;
+			output.imgData[c + 0] = char(0);
+			output.imgData[c + 1] = char(0);
+			output.imgData[c + 2] = char(0);
 
-	  for (int y = output.height - 1; y >= 0; --y) {
-		  c = (y * output.width) * 3;
-		  output.imgData[c + 0] = char(0);
-		  output.imgData[c + 1] = char(0);
-		  output.imgData[c + 2] = char(0);
+			c = ((y + 1) * output.width - 1) * 3;
+			output.imgData[c + 0] = char(0);
+			output.imgData[c + 1] = char(0);
+			output.imgData[c + 2] = char(0);
+		}
 
-		  c = ((y + 1) * output.width - 1) * 3;
-		  output.imgData[c + 0] = char(0);
-		  output.imgData[c + 1] = char(0);
-		  output.imgData[c + 2] = char(0);
-	  }
-
-	  assert(c <= limit);
-  }
+		assert(c <= limit);
+	}
 }

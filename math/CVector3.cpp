@@ -43,7 +43,7 @@ vec3 vec3::Rotate(float _degree, const vec3& _axis) const {
   float _sinAng = sinf(_rad);
 
   vec3 ax = _axis.getNormalized();
-  const vec3 _Cross = vec3(x, y, z) * ax;
+  const vec3 _Cross = cross(vec3(x, y, z), ax);
   ax = ax * dot(*this, ax);
 
   //	Rotate
@@ -84,6 +84,24 @@ float vec3::Angle(const vec3& _vector) const
 
 	// Return the angle in radians
 	return (_angle);
+}
+
+
+float vec3::Distance(const vec3& _point, const vec3& _orig /*= vec3(0, 0, 0)*/) const
+{
+	vec3 _top = cross((_point - _orig), (*this));
+	_top /= Magnitude();
+	return _top.Magnitude();
+}
+
+
+float vec3::DistanceFast(const vec3& _point) const
+{
+
+	//	Gets the distance to the closest point on the line
+	//	ASSUMES (this) is from Origin and length 1
+	vec3 _top = cross(_point, (*this));
+	return _top.Magnitude();
 }
 
 //	Normalizes the vector
@@ -138,9 +156,6 @@ vec3 vec3::getLatitude() const {
 
 bool refract(const vec3& v, const vec3& n, float ni_over_nt, vec3& out)
 {
-	out = v + n * (2.0f * dot(v, n));
-	return true;
-/*
 	vec3 vnorm = v.getNormalized();
 	float dt = dot(vnorm, n);
 
@@ -150,6 +165,5 @@ bool refract(const vec3& v, const vec3& n, float ni_over_nt, vec3& out)
 
 	out = (vnorm - n * dt) * ni_over_nt - n * sqrtf(discriminant);
 	return true;		
-	*/
 }
 

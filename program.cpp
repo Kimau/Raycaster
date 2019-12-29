@@ -59,15 +59,15 @@ bool handleInput(SDL_Event event) {
 	  switch (event.key.keysym.sym) {
 		  case SDLK_w: rs.cam.a += rs.cam.b * 0.1f; break;
 		  case SDLK_s: rs.cam.a -= rs.cam.b * 0.1f; break;
-		  case SDLK_a: rs.cam.a -= rs.cam.b * up_vec * 0.1f; break;
-		  case SDLK_d: rs.cam.a += rs.cam.b * up_vec * 0.1f; break;
+		  case SDLK_a: rs.cam.a -= cross(rs.cam.b, up_vec) * 0.1f; break;
+		  case SDLK_d: rs.cam.a += cross(rs.cam.b, up_vec) * 0.1f; break;
 		  case SDLK_q: rs.cam.a += up_vec * 0.1f; break;
 		  case SDLK_e: rs.cam.a -= up_vec * 0.1f; break;
 
 		  case SDLK_LEFT:  rs.cam.b = rs.cam.b.RotateZ(-5.0f); break;
 		  case SDLK_RIGHT: rs.cam.b = rs.cam.b.RotateZ(+5.0f); break;
-		  case SDLK_UP:    rs.cam.b = rs.cam.b.Rotate(-5.0f, rs.cam.b * up_vec); break;
-		  case SDLK_DOWN:  rs.cam.b = rs.cam.b.Rotate(+5.0f, rs.cam.b * up_vec); break;
+		  case SDLK_UP:    rs.cam.b = rs.cam.b.Rotate(-5.0f, cross(rs.cam.b, up_vec)); break;
+		  case SDLK_DOWN:  rs.cam.b = rs.cam.b.Rotate(+5.0f, cross(rs.cam.b, up_vec)); break;
 	  } break;
 
   case SDL_KEYUP:
@@ -129,15 +129,18 @@ void update() {
 	}
 	ImGui::Separator();
 	{
+		if (ImGui::BeginMenu("Render Mode")) {
+			const char* names[NOOF_RENDER_STATES] = {
+				"Always",
+				"Single Shot"
+			};
 
-		const char* names[2] = {
-			"Always",
-			"Single Shot"
-		};
+			RenderType old_state = g_render_state_index;
+			if (ImGui::ListBox("", (int*)&g_render_state_index, names, NOOF_RENDER_STATES)) {
+				g_render_states[g_render_state_index].cam = g_render_states[old_state].cam; // Copy from old state
+			}
 
-		RenderType old_state = g_render_state_index;
-		if (ImGui::ListBox("", (int*)&g_render_state_index, names, NOOF_RENDER_STATES)) {
-			g_render_states[g_render_state_index].cam = g_render_states[old_state].cam; // Copy from old state
+			ImGui::EndMenu();
 		}
 
 		raycast_state& rs = g_render_states[g_render_state_index];
@@ -153,10 +156,25 @@ void update() {
 		{
 			if (false == rs.want_draw)
 				rs.want_draw = ImGui::Button("Redraw");
+
+			if (ImGui::BeginMenu("Debug Mode")) {
+				const char* debug_modes[NOOF_DEBUG_MODES] = {
+					"NO_DEBUG",
+					"DEBUG_NORMAL",
+					"DEBUG_BOUNCE_DIR",
+					"DEBUG_TIME",
+				};
+				ImGui::ListBox("", (int*)&rs.dmode, debug_modes, NOOF_DEBUG_MODES);
+
+				ImGui::EndMenu();
+			}
+
 			ImGui::DragFloat3("Pos", &rs.cam.a.x, 0.1f);
 			ImGui::DragFloat3("Dir", &rs.cam.b.x, 0.1f);
 			ImGui::SliderFloat2("Scale", &rs.ray_scale.x, 64.0f, 1024.0f, "%.0f");
 			ImGui::Checkbox("Poisson Sampling", &rs.use_poisson);
+			ImGui::Checkbox("Recurse", &rs.use_recurse);
+			ImGui::InputInt("Pass Break", &rs.pass_break);
 			ImGui::InputInt("Samples", &rs.num_samples);
 			ImGui::InputInt("Bounces", &rs.num_bounces);
 		}

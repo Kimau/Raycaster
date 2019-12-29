@@ -4,7 +4,7 @@
 
 
 vec4 createPlaneFromPoints(const vec3& a, const vec3& b, const vec3& c) {
-	vec3 norm = ((a - b)*(b - c));
+	vec3 norm = cross((a - b),(b - c));
 	norm.Normalize();
 	return vec4(norm.x, norm.y, norm.z, - dot(norm,a));
 }
@@ -219,3 +219,4 @@ vec3 random_in_unit_sphere()
 {
 	return vec3(random_float()*1.99f - 1.0f, random_float()*1.99f - 1.0f, random_float()*1.99f - 1.0f);
 }
+

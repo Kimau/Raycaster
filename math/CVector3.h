@@ -14,28 +14,17 @@ public:
   //	Operators
   inline vec3 operator+(const vec3& v) const { return vec3(x + v.x, y + v.y, z + v.z); }
   inline vec3 operator-(const vec3& v) const { return vec3(x - v.x, y - v.y, z - v.z); }
+  inline vec3 operator*(const vec3& v) const { return vec3(x * v.x, y * v.y, z * v.z); }
   inline vec3 operator*(float s) const { return vec3(x * s, y*s, z*s); }
   inline vec3 operator/(float s) const { return vec3(x / s, y / s, z / s); }
-
-  inline vec3 operator*(const vec3& v) const {
-	  return vec3(
-		  (y * v.z) - (z * v.y),
-		  (z * v.x) - (x * v.z),
-		  (x * v.y) - (y * v.x));
-  }
-
+  
   //	Self Operators
   inline void operator+=(const vec3& v) { x += v.x; y += v.y; z += v.z; }
   inline void operator-=(const vec3& v) { x -= v.x; y -= v.y; z -= v.z; }
+  inline void operator*=(const vec3& v) { x *= v.x; y *= v.y; z *= v.z; }
   inline void operator*=(float s) { x *= s; y *= s; z *= s; }
   inline void operator/=(float s) { x /= s; y /= s; z /= s; }
-
-  inline void operator*=(const vec3& _vector) {
-	  x = ((y * _vector.z) - (z * _vector.y));
-	  y = ((z * _vector.x) - (x * _vector.z));
-	  z = ((x * _vector.y) - (y * _vector.x));
-  }
-
+  
   //	Functions
   void Normalize();
   inline void Invert() {
@@ -58,19 +47,8 @@ public:
   constexpr inline float SqrdMag() const { return x * x + y * y + z * z; }
   float Angle(const vec3& _vector) const;
 
-  inline float Distance(const vec3& _point, const vec3& _orig = vec3(0, 0, 0)) const {
-	  vec3 _top = ((_point - _orig) * (*this));
-	  _top /= Magnitude();
-	  return _top.Magnitude();
-  }
-
-  inline float DistanceFast(const vec3& _point) const {
-	 
-		  //	Gets the distance to the closest point on the line
-		  //	ASSUMES (this) is from Origin and length 1
-		  vec3 _top = (_point * (*this));
-		  return _top.Magnitude();
-  }
+  float Distance(const vec3& _point, const vec3& _orig = vec3(0, 0, 0)) const;
+  float DistanceFast(const vec3& _point) const;
 
   void getArray(float *_array) const {
 		  _array[0] = x;
@@ -82,6 +60,7 @@ public:
 };
 
 constexpr float dot(const vec3& a, const vec3& b) { return ((a.x * b.x) + (a.y * b.y) + (a.z * b.z)); }
+inline vec3 cross(const vec3& a, const vec3& b) { return vec3((a.y * b.z) - (a.z * b.y), (a.z * b.x) - (a.x * b.z), (a.x * b.y) - (a.y * b.x)); }
 inline vec3 reflect(const vec3& v, const vec3& n) { return v - n * (2.0f * dot(v,n)); }
 bool refract(const vec3& v, const vec3& n, float ni_over_nt, vec3& out);
 

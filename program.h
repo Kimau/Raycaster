@@ -5,13 +5,14 @@
 #include "math/algebra.h"
 #include <GL/gl3w.h>
 
-// Viewport Stuff
-bool setupOrthViewport(int width, int height);
-
-void init();
-void update();
-bool handleInput(SDL_Event event);
-void render(SDL_Window *window);
+enum debug_mode
+{
+	NO_DEBUG,
+	DEBUG_NORMAL,
+	DEBUG_BOUNCE_DIR,
+	DEBUG_TIME,
+	NOOF_DEBUG_MODES
+};
 
 //
 struct raycast_state {
@@ -21,6 +22,8 @@ struct raycast_state {
 	bool border = true;
 	bool want_draw = false;
 	bool use_poisson = true;
+	bool use_recurse = false;
+	debug_mode dmode = NO_DEBUG;
 
 	ray3 cam = ray3(vec3(0.0f, 0.0f, 1.5f), vec3(0.0f, 1.0f, 0.0f));
 	vec3 up = vec3(0.0f, 0.0f, 1.0f);
@@ -49,3 +52,12 @@ enum RenderType
 
 extern RenderType g_render_state_index;
 extern raycast_state g_render_states[NOOF_RENDER_STATES];
+
+
+// Viewport Stuff
+bool setupOrthViewport(int width, int height);
+
+void init();
+void update();
+bool handleInput(SDL_Event event);
+void render(SDL_Window *window, raycast_state& rs);
