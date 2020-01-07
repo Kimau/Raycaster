@@ -148,6 +148,9 @@ bool glinit() {
 
 bool setupOrthViewport(int width, int height) { return false; }
 
+
+void Raycast(ImageData &output, const raycast_state& state);
+
 // Render
 void render(SDL_Window *window, raycast_state& rs) {
   // Setup Render State
@@ -235,13 +238,39 @@ void render(SDL_Window *window, raycast_state& rs) {
 
   // Post Render Bullshit
   if (rs.want_draw) {
-    if ((false == g_rayresult.loaded) || (g_rayresult.width != ray_width) ||
-        (g_rayresult.height != ray_height))
-      g_rayresult.BlankImage(ray_width, ray_height);
 
-	Raycast(g_rayresult, rs);
-    g_rayresult.CopyToGPU();
-	rs.want_draw = false;
+	  switch (rs.drawing)
+	  {
+	  case 	DRAW_FULL_FRAME:
+		  Raycast(g_rayresult, rs);
+		  g_rayresult.CopyToGPU();
+		  rs.want_draw = false;
+		  break;
+
+	  case DRAW_ONE_LINE:
+		  if ((rs.curr_pass < 0) || (rs.curr_pass >= rs.num_passes))
+			  rs.curr_pass = 0;
+		  break;
+
+	  case DRAW_RANDOM:
+		  if ((rs.curr_pass < 0) || (rs.curr_pass >= rs.num_passes))
+			  rs.curr_pass = 0;
+		  break;
+
+	  default:
+		  rs.want_draw = false;
+		  break;
+	  }
+
+	  if (rs.want_draw) {
+		  if ((false == g_rayresult.loaded) || (g_rayresult.width != ray_width) ||
+			  (g_rayresult.height != ray_height))
+			  g_rayresult.BlankImage(ray_width, ray_height);
+
+		  Raycast(g_rayresult, rs);
+		  g_rayresult.CopyToGPU();
+		  ++rs.curr_pass;
+	  }
   }
 
   if (g_request_save_file) {

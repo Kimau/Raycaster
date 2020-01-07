@@ -152,6 +152,7 @@
     <ClCompile Include="..\math\Cvector4.cpp" />
     <ClCompile Include="..\program.cpp" />
     <ClCompile Include="..\raycast.cpp" />
+    <ClCompile Include="..\world.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\core.h" />
@@ -160,6 +161,8 @@
     <ClInclude Include="..\glprog.h" />
     <ClInclude Include="..\gltex.h" />
     <ClInclude Include="..\hit_record.h" />
+    <ClInclude Include="..\pastel_colours.h" />
+    <ClInclude Include="..\raycast.h" />
     <ClInclude Include="..\solid_hit.h" />
     <ClInclude Include="..\imgui_impl_sdl_gl3.h" />
     <ClInclude Include="..\libs\atomic\atomicops.h" />
@@ -177,6 +180,7 @@
     <ClInclude Include="..\math\Cvector4.h" />
     <ClInclude Include="..\program.h" />
     <ClInclude Include="..\types.h" />
+    <ClInclude Include="..\world.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

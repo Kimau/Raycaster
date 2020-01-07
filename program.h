@@ -4,33 +4,7 @@
 #include "gltex.h"
 #include "math/algebra.h"
 #include <GL/gl3w.h>
-
-enum debug_mode
-{
-	NO_DEBUG,
-	DEBUG_NORMAL,
-	DEBUG_BOUNCE_DIR,
-	DEBUG_TIME,
-	NOOF_DEBUG_MODES
-};
-
-//
-struct raycast_state {
-	int pass_break = 1;
-	int num_samples = 3;
-	int num_bounces = 30;
-	bool border = true;
-	bool want_draw = false;
-	bool use_poisson = true;
-	bool use_recurse = false;
-	debug_mode dmode = NO_DEBUG;
-
-	ray3 cam = ray3(vec3(0.0f, 0.0f, 1.5f), vec3(0.0f, 1.0f, 0.0f));
-	vec3 up = vec3(0.0f, 0.0f, 1.0f);
-	vec2 ray_scale = vec2(SCREEN_WIDTH * 0.4f, SCREEN_HEIGHT * 0.4f);
-};
-
-void Raycast(ImageData &output, const raycast_state& state);
+#include "raycast.h"
 
 //
 extern bool g_imguiShowTestWindow;
@@ -52,7 +26,6 @@ enum RenderType
 
 extern RenderType g_render_state_index;
 extern raycast_state g_render_states[NOOF_RENDER_STATES];
-
 
 // Viewport Stuff
 bool setupOrthViewport(int width, int height);

@@ -87,6 +87,9 @@
     <ClCompile Include="..\solid_hit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\world.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\imgui_impl_sdl_gl3.h">
@@ -156,6 +159,15 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\hit_record.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\pastel_colours.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\world.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\raycast.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
